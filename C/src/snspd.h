@@ -5,9 +5,9 @@
 typedef struct _simres {
     size_t J;               // number of spatial samples
     size_t N;               // number of time samples
-    char * T;               // filename temperature matrix T[time][space]
-    char * I;               // filename current vectors I[time][number]
-    char * R;               // filename resistance vectors R[time][number]
+    double ** T;            // temperature matrix T[time][space]
+    double ** I;            // current vectors I[time][number]
+    double ** R;            // resistance vectors R[time][number]
     int exitValue;          // 0 for succes, anything else for error
 } SimRes;
 

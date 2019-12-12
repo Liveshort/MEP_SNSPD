@@ -1,20 +1,25 @@
 CC     = gcc
 CFLAGS = -I -Wall -Wextra
-DEPS   = snspd.h
+DEPS   = snspd.h thermal.h
 
-_OBJ   = snspd.o
+_OBJ   = snspd.o thermal.o simulation.o
 OBJ    = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 ODIR   = obj
+SDIR   = src
 
-$(ODIR)/%.o: %.c $(DEPS)
+$(ODIR)/%.o: $(SDIR)/%.c $(DEPS)
 	$(CC) -c -fPIC -o $@ $< $(CFLAGS)
 
+all: snspd simulation
+
 snspd: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
 	$(CC) -shared -o $@.so $^ $(CFLAGS)
 
-.PHONY: clean
+simulation: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS)
+
+.PHONY: clean all
 
 clean:
 	rm -f $(ODIR)/*.o snspd snspd.so
