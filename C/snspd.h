@@ -5,10 +5,10 @@
 typedef struct _simres {
     size_t J;               // number of spatial samples
     size_t N;               // number of time samples
-    double ** T;            // temperature matrix T[time][space]
-    double ** I;            // current vectors I[time][number]
-    double ** R;            // resistance vectors R[time][number]
-    int success;            // 0 for succes, anything else for error
+    char * T;               // filename temperature matrix T[time][space]
+    char * I;               // filename current vectors I[time][number]
+    char * R;               // filename resistance vectors R[time][number]
+    int exitValue;          // 0 for succes, anything else for error
 } SimRes;
 
 // structure that contains the (input) data of the simulation of an snspd
@@ -31,7 +31,7 @@ typedef struct _simdata {
     double alpha;           // thermal boundary conductivity
     double T_sub;           // substrate temperature
     // data specific to the standard model (runtype 0)
-    double Z_0;             // load resistor
+    double R_L_std;         // load resistor
     double C_m_std;         // dc port bias tee
     double I_b_std;         // bias current
     double initHS_l_std;    // initial hotspot length (to simulate a photon hit)
