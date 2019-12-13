@@ -41,7 +41,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
 
     switch(runType) {
         case 0:
-            run_bergen_standard(res, data, dX, dt);
+            run_yang(res, data, dX, dt);
             break;
         default:
             printf("Unknown runtype %d...\nReturning empty result with error 1 (wrong runType)...", runType);
