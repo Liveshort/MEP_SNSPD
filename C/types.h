@@ -1,5 +1,5 @@
-#ifndef __SNSPD_H__
-#define __SNSPD_H__
+#ifndef __TYPES_H__
+#define __TYPES_H__
 
 // structure that contains the result of the simulation of an snspd
 typedef struct _simres {
@@ -40,6 +40,7 @@ typedef struct _simdata {
     double L_w_std;         // kinetic inductance of the nanowire
 } SimData;
 
-SimRes * run_snspd_simulation(SimData * data, int runType);
+void free_simres(SimRes * simRes);
+void free_simdata(SimData * simData);
 
 #endif
