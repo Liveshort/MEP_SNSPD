@@ -1,9 +1,11 @@
 CC     = gcc
 CFLAGS = -I -Wall -Wextra
-DEPS   = snspd.h thermal.h helper.h bergen_standard.h types.h
+DEPS   = snspd.h thermal.h helper.h yang.h types.h
 
-_OBJ   = types.o thermal.o helper.o bergen_standard.o snspd.o simulation.o
+_OBJ   = types.o thermal.o helper.o yang.o snspd.o simulation.o
 OBJ    = $(patsubst %,$(ODIR)/%,$(_OBJ))
+
+LIBS   = -lm
 
 ODIR   = obj
 
@@ -13,10 +15,10 @@ $(ODIR)/%.o: %.c $(DEPS)
 all: snspd simulation
 
 snspd: $(OBJ)
-	$(CC) -shared -o bld/$@.so $^ $(CFLAGS)
+	$(CC) -shared -o bld/$@.so $^ $(CFLAGS) $(LIBS)
 
 simulation: $(OBJ)
-	$(CC) -o bld/$@ $^ $(CFLAGS)
+	$(CC) -o bld/$@ $^ $(CFLAGS) $(LIBS)
 
 run:
 	./bld/simulation

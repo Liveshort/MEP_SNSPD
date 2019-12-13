@@ -38,6 +38,7 @@ typedef struct _simdata {
     double initHS_T_std;    // initial hotspot temperature
     double rho_norm_std;    // conductivity of the nanowire in normal state
     double L_w_std;         // kinetic inductance of the nanowire
+    double T_ref_std;       // reference temperature for model parameters [Yang]
 } SimData;
 
 void free_simres(SimRes * simRes);

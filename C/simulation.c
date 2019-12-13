@@ -32,6 +32,7 @@ int main(int argc, char * argv[]) {
     simData->initHS_T_std = 8;
     simData->rho_norm_std = simData->wireThickness * 600;
     simData->L_w_std = 808E-9;
+    simData->T_ref_std = 10;
 
     SimRes * simRes = run_snspd_simulation(simData, 0);
 

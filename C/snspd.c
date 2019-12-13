@@ -6,7 +6,7 @@
 #include "types.h"
 #include "snspd.h"
 #include "helper.h"
-#include "bergen_standard.h"
+#include "yang.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
