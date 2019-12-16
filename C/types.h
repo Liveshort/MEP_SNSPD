@@ -30,6 +30,7 @@ typedef struct _simdata {
     double c_e;             // electron specific heat
     double alpha;           // thermal boundary conductivity
     double T_sub;           // substrate temperature
+    double T_sub_eps;       // sub temp epsilon, optimization strategy (detect steady state)
     // data specific to the standard model (runtype 0)
     double R_L_std;         // load resistor
     double C_m_std;         // dc port bias tee

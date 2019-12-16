@@ -17,16 +17,17 @@ double I_cT(double I_c0, double T, double T_c) {
 
 // updates the alpha, kappa, c and conductivity values for all segments
 // takes into account state dependence etc, specific to the model used in [Yang]
-int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, double * rho_seg_n, double * T_n, size_t J, double A, double B, double gamma, double T_c, double I, double I_c0, double rho_norm, double c_p, double T_ref) {
+int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, double * rho_seg_n, double * R_seg_n, double * T_n, size_t J, double A, double B, double gamma, double T_c, double * I_n, double I_c0, double rho_norm, double c_p, double T_ref, double R_seg) {
     // loop over all segments at the current timestep
     for (unsigned j=0; j<J; ++j) {
         // alpha is taken to be state independent, not strictly true, but for more, see [Yang]
         alpha_n[j] = B * pow(T_n[j], 3);
         // model values for kappa, c and rho for normal state
-        if (T_n[j] > T_c || I > I_cT(I_c0, T_n[j], T_c)) {
+        if (T_n[j] > T_c || I_n[0] > I_cT(I_c0, T_n[j], T_c)) {
             kappa_n[j] = Lorentz*T_n[j]/rho_norm;
             c_n[j] = gamma*T_n[j] + c_p*pow(T_n[j]/T_ref, 3);
             rho_seg_n[j] = rho_norm;
+            R_seg_n[j] = R_seg;
         }
         // model values for kappa c and rho for superconducting state
         else {
@@ -34,8 +35,15 @@ int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, doub
             double Delta = 2.15*T_c*(1 - (T_n[j]/T_c)*(T_n[j]/T_c));
             c_n[j] = A*exp(-Delta/(Kb*T_n[j])) + c_p*pow(T_n[j]/T_ref, 3);
             rho_seg_n[j] = 0;
+            R_seg_n[j] = 0;
         }
     }
+
+    print_vector(kappa_n, J);
+    print_vector(alpha_n, J);
+    print_vector(c_n, J);
+    print_vector(rho_seg_n, J);
+    puts("");
 
     return 0;
 }
@@ -76,11 +84,34 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
+    // define the resistance of a segment of wire in the normal state
+    double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
+    // declare the nanowire resistance and current density
+    double R_w;
+    double currentDensity_w;
+
     // allocate space for the state and temperature dependent variables for each time step
     double * alpha_n = calloc(J, sizeof(double));
     double * kappa_n = calloc(J, sizeof(double));
     double * c_n = calloc(J, sizeof(double));
     double * rho_seg_n = calloc(J, sizeof(double));
+    double * R_seg_n = calloc(J, sizeof(double));
+
+    // main time loop
+    for (unsigned n=0; n<2; ++n) {
+
+        // TODO: optimization with T_sub_eps
+
+        // first update the thermal values used in the differential equation,
+        //     the targets are included as the first five parameters
+        update_thermal_values(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I[n], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+        // update the current nanowire resistance
+        R_w = sum_vector(R_seg_n, J);
+        // update the current density through the nanowire
+        currentDensity_w = I[n][0]/(data->wireWidth*data->wireThickness);
+        // advance the thermal model to the next time step
+        advance_time(T[n], T[n+1], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+    }
 
     print_vector(T[0], J);
 }

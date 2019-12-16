@@ -25,6 +25,7 @@ int main(int argc, char * argv[]) {
     simData->c_e = 2400;
     simData->alpha = 8E5;
     simData->T_sub = 2;
+    simData->T_sub_eps = 0.001;
     simData->R_L_std = 50;
     simData->C_m_std = 100E-9;
     simData->I_b_std = 16.5E-6;

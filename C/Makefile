@@ -1,8 +1,8 @@
 CC     = gcc
 CFLAGS = -I -Wall -Wextra
-DEPS   = snspd.h thermal.h helper.h yang.h types.h
+DEPS   = snspd.h thermal.h helper.h yang.h types.h linalg.h
 
-_OBJ   = types.o thermal.o helper.o yang.o snspd.o simulation.o
+_OBJ   = types.o linalg.o helper.o thermal.o yang.o snspd.o simulation.o
 OBJ    = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 LIBS   = -lm
