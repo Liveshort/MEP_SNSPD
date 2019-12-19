@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "linalg.h"
+#include "helper.h"
 
 // function that advances time a single time step. It sets up the tridiagonal matrix and hands
 //     it to the solver in the linalg code.
@@ -31,6 +32,11 @@ int advance_time(double * T_n, double * T_np1, size_t J, double T_sub, double * 
 
     // solve the tridiagonal matrix
     TDM_solve(T_np1, J, lhsDiag_n, lhsOffDiag_n, rhs_n);
+
+    puts("T_n and T_np1");
+    print_vector(T_n, J);
+    print_vector(T_np1, J);
+    puts("");
 
     // free the temporary variables
     free(lhsDiag_n);

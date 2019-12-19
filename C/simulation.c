@@ -5,40 +5,71 @@
 
 #include "types.h"
 #include "snspd.h"
-#include "thermal.h"
+#include "helper.h"
+
+#include "linalg.h"
 
 int main(int argc, char * argv[]) {
-    puts("We're running");
+    // Put in the experiment data and run the experiment
+    SimData * data = calloc(1, sizeof(SimData));
+    data->J = 10;
+    data->N = 10000;
+    data->numberOfI = 1;
+    data->numberOfR = 1;
+    data->wireLength = 1.5E-8;//1.5E-6;
+    data->wireThickness = 4E-9;
+    data->wireWidth = 100E-9;
+    data->tMax = 1E-9;
+    data->T_c = 10.5;
+    data->I_c0 = 20E-6;
+    data->c_p = 9800;
+    data->c_e = 2400;
+    data->alpha = 8E5;
+    data->T_sub = 2;
+    data->T_sub_eps = 0.001;
+    data->R_L_std = 50;
+    data->C_m_std = 100E-9;
+    data->I_b_std = 16.5E-6;
+    data->initHS_l_std = 0.25E-8;//15E-9;
+    data->initHS_T_std = 8;
+    data->rho_norm_std = data->wireThickness * 600;
+    data->L_w_std = 808E-9;
+    data->T_ref_std = 10;
 
-    SimData * simData = calloc(1, sizeof(SimData));
-    simData->J = 10;
-    simData->N = 10;
-    simData->numberOfI = 1;
-    simData->numberOfR = 1;
-    simData->wireLength = 1.5E-6;
-    simData->wireThickness = 4E-9;
-    simData->wireWidth = 100E-9;
-    simData->tMax = 1E-9;
-    simData->T_c = 10.5;
-    simData->I_c0 = 20E-6;
-    simData->c_p = 9800;
-    simData->c_e = 2400;
-    simData->alpha = 8E5;
-    simData->T_sub = 2;
-    simData->T_sub_eps = 0.001;
-    simData->R_L_std = 50;
-    simData->C_m_std = 100E-9;
-    simData->I_b_std = 16.5E-6;
-    simData->initHS_l_std = 0.5E-6;//15E-9;
-    simData->initHS_T_std = 8;
-    simData->rho_norm_std = simData->wireThickness * 600;
-    simData->L_w_std = 808E-9;
-    simData->T_ref_std = 10;
-
-    SimRes * simRes = run_snspd_simulation(simData, 0);
+    SimRes * simRes = run_snspd_simulation(data, 0);
 
     free_simres(simRes);
-    free_simdata(simData);
+    free_simdata(data);
+
+    //double * diag = calloc(5, sizeof(double));
+    //double * offdiag = calloc(5, sizeof(double));
+    //double * rhs = calloc(5, sizeof(double));
+//
+    //diag[0] = 3;
+    //diag[1] = 3;
+    //diag[2] = 6;
+    //diag[3] = 5;
+    //diag[4] = 3;
+    ////diag[5] = 3;
+//
+    //offdiag[0] = 0.8;
+    //offdiag[1] = 0.5;
+    //offdiag[2] = 0.2;
+    //offdiag[3] = 0.4;
+    //offdiag[4] = 0.5;
+    ////offdiag[5] = 1;
+//
+    //rhs[0] = 10;
+    //rhs[1] = 4;
+    //rhs[2] = 3;
+    //rhs[3] = 5;
+    //rhs[4] = 8;
+    ////rhs[5] = 6;
+//
+    //double * res = calloc(5, sizeof(double));
+//
+    //TDM_solve(res, 5, diag, offdiag, rhs);
+    //print_vector(res, 5);
 
     exit(0);
 }

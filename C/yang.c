@@ -32,7 +32,7 @@ int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, doub
         // model values for kappa c and rho for superconducting state
         else {
             kappa_n[j] = Lorentz*T_n[j]/rho_norm * T_n[j]/T_c;
-            double Delta = 2.15*T_c*(1 - (T_n[j]/T_c)*(T_n[j]/T_c));
+            double Delta = 2.15*T_c*Kb*(1 - (T_n[j]/T_c)*(T_n[j]/T_c));
             c_n[j] = A*exp(-Delta/(Kb*T_n[j])) + c_p*pow(T_n[j]/T_ref, 3);
             rho_seg_n[j] = 0;
             R_seg_n[j] = 0;
@@ -114,4 +114,11 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     }
 
     print_vector(T[0], J);
+
+    // free allocated space
+    free(alpha_n);
+    free(kappa_n);
+    free(c_n);
+    free(rho_seg_n);
+    free(R_seg_n);
 }
