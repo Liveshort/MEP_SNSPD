@@ -26,13 +26,26 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     SimRes * res = calloc(1, sizeof(SimRes));
     res->J = J;
     res->N = N;
-    res->T = calloc(N, sizeof(double *));
-    res->I = calloc(N, sizeof(double *));
-    res->R = calloc(N, sizeof(double *));
-    for (unsigned n=0; n<N; ++n) {
-        res->T[n] = calloc(J, sizeof(double));
-        res->I[n] = calloc(data->numberOfI, sizeof(double));
-        res->R[n] = calloc(data->numberOfR, sizeof(double));
+    res->numberOfT = data->numberOfT;
+    res->numberOfI = data->numberOfI;
+    res->numberOfR = data->numberOfR;
+
+    res->T = calloc(data->numberOfT, sizeof(double **));
+    for (unsigned t=0; t<data->numberOfT; ++t) {
+        res->T[t] = calloc(N, sizeof(double *));
+        for (unsigned n=0; n<N; ++n) {
+            res->T[t][n] = calloc(J, sizeof(double));
+        }
+    }
+
+    res->I = calloc(data->numberOfI, sizeof(double *));
+    for (unsigned i=0; i<data->numberOfI; ++i) {
+        res->I[i] = calloc(N, sizeof(double));
+    }
+
+    res->R = calloc(data->numberOfR, sizeof(double *));
+    for (unsigned r=0; r<data->numberOfR; ++r) {
+        res->R[r] = calloc(N, sizeof(double));
     }
 
     // calculate delta x and delta t

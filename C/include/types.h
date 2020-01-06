@@ -5,9 +5,12 @@
 typedef struct _simres {
     size_t J;               // number of spatial samples
     size_t N;               // number of time samples
-    double ** T;            // temperature matrix T[time][space]
-    double ** I;            // current vectors I[time][number]
-    double ** R;            // resistance vectors R[time][number]
+    size_t numberOfT;       // number of temperature vectors that need to be measured
+    size_t numberOfI;       // number of currents that need to be measured
+    size_t numberOfR;       // number of resistances that need to be measured
+    double *** T;           // temperature matrices T[number][time][space]
+    double ** I;            // current vectors I[number][time]
+    double ** R;            // resistance vectors R[number][time]
     int exitValue;          // 0 for succes, anything else for error
 } SimRes;
 
@@ -16,6 +19,7 @@ typedef struct _simdata {
     // general info
     size_t J;               // number of spatial samples
     size_t N;               // number of time samples
+    size_t numberOfT;       // number of temperature vectors that need to be measured
     size_t numberOfI;       // number of currents that need to be measured
     size_t numberOfR;       // number of resistances that need to be measured
     // physical dimensions

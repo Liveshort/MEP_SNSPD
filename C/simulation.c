@@ -14,6 +14,7 @@ int main(int argc, char * argv[]) {
     SimData * data = calloc(1, sizeof(SimData));
     data->J = 10;
     data->N = 10000;
+    data->numberOfT = 1;
     data->numberOfI = 1;
     data->numberOfR = 1;
     data->wireLength = 1.5E-8;//1.5E-6;
@@ -36,9 +37,9 @@ int main(int argc, char * argv[]) {
     data->L_w_std = 808E-9;
     data->T_ref_std = 10;
 
-    SimRes * simRes = run_snspd_simulation(data, 0);
+    SimRes * res = run_snspd_simulation(data, 0);
 
-    free_simres(simRes);
+    free_simres(res);
     free_simdata(data);
 
     //double * diag = calloc(5, sizeof(double));

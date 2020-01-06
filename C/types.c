@@ -3,22 +3,29 @@
 #include "types.h"
 
 // function that frees SimRes struct
-void free_simres(SimRes * simRes) {
+void free_simres(SimRes * res) {
     // first free all the matrix contents
-    for (unsigned n=0; n<simRes->N; ++n) {
-        free(simRes->T[n]);
-        free(simRes->I[n]);
-        free(simRes->R[n]);
+    for (unsigned i=0; i<res->numberOfI; ++i) {
+        free(res->I[i]);
     }
-    free(simRes->T);
-    free(simRes->I);
-    free(simRes->R);
-    free(simRes);
+    for (unsigned r=0; r<res->numberOfR; ++r) {
+        free(res->R[r]);
+    }
+    for (unsigned t=0; t<res->numberOfT; ++t) {
+        for (unsigned n=0; n<res->N; ++n) {
+            free(res->T[t][n]);
+        }
+        free(res->T[t]);
+    }
+    free(res->T);
+    free(res->I);
+    free(res->R);
+    free(res);
 
     return;
 }
 
-// function that frees SimRes struct
+// function that frees SimData struct
 void free_simdata(SimData * simData) {
     free(simData);
 
