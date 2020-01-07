@@ -7,7 +7,7 @@ void print_matrix_rowmajor( char* desc, lapack_int m, lapack_int n, double* mat,
         printf( "\n %s\n", desc );
 
         for( i = 0; i < m; i++ ) {
-                for( j = 0; j < n; j++ ) printf( " %6.3f", mat[i*ldm+j] );
+                for( j = 0; j < n; j++ ) printf( " %10.9e", mat[i*ldm+j] );
                 printf( "\n" );
         }
 }
@@ -19,7 +19,7 @@ void print_matrix_colmajor( char* desc, lapack_int m, lapack_int n, double* mat,
         printf( "\n %s\n", desc );
 
         for( i = 0; i < m; i++ ) {
-                for( j = 0; j < n; j++ ) printf( " %6.3f", mat[i+j*ldm] );
+                for( j = 0; j < n; j++ ) printf( " %10.9e", mat[i+j*ldm] );
                 printf( "\n" );
         }
 }
@@ -28,6 +28,6 @@ void print_matrix_colmajor( char* desc, lapack_int m, lapack_int n, double* mat,
 void print_vector_lpk( char* desc, lapack_int n, lapack_int* vec ) {
         lapack_int j;
         printf( "\n %s\n", desc );
-        for( j = 0; j < n; j++ ) printf( " %6i", vec[j] );
+        for( j = 0; j < n; j++ ) printf( " %10.9e", (double) vec[j] );
         printf( "\n" );
 }

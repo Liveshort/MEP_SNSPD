@@ -38,7 +38,7 @@ double sum_vector(double * vec, size_t J) {
     double sum = 0;
 
     for (unsigned j=0; j<J; ++j) {
-        sum = vec[j];
+        sum += vec[j];
     }
 
     return sum;
