@@ -19,57 +19,6 @@ double I_cT(double I_c0, double T, double T_c) {
     return (I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
 }
 
-void test_lapack() {
-    lapack_int n, nrhs, lda, ldb, info;
-    int i, j;
-    double *A, *b;
-    lapack_int *ipiv;
-    n = 5; nrhs = 1;
-
-    lda=n, ldb=nrhs;
-    A = (double *)malloc(n*n*sizeof(double)) ;
-    if (A==NULL){ printf("error of memory allocation\n"); exit(0); }
-    b = (double *)malloc(n*nrhs*sizeof(double)) ;
-    if (b==NULL){ printf("error of memory allocation\n"); exit(0); }
-    ipiv = (lapack_int *)malloc(n*sizeof(lapack_int)) ;
-    if (ipiv==NULL){ printf("error of memory allocation\n"); exit(0); }
-
-    for( i = 0; i < n; i++ ) {
-            for( j = 0; j < n; j++ ) A[i*lda+j] = ((double) rand()) / ((double) RAND_MAX) - 0.5;
-    }
-
-    for(i=0;i<n*nrhs;i++)
-        b[i] = ((double) rand()) / ((double) RAND_MAX) - 0.5;
-
-    /* Print Entry Matrix */
-    print_matrix_rowmajor( "Entry Matrix A", n, n, A, lda );
-    /* Print Right Rand Side */
-    print_matrix_rowmajor( "Right Rand Side b", n, nrhs, b, ldb );
-    printf( "\n" );
-
-    info = LAPACKE_dgesv( LAPACK_ROW_MAJOR, n, nrhs, A, lda, ipiv,
-                    b, ldb );
-    /* Check for the exact singularity */
-    if( info > 0 ) {
-            printf( "The diagonal element of the triangular factor of A,\n" );
-            printf( "U(%i,%i) is zero, so that A is singular;\n", info, info );
-            printf( "the solution could not be computed.\n" );
-            exit( 1 );
-    }
-    if (info <0) exit( 1 );
-
-    /* Print solution */
-    print_matrix_rowmajor( "Solution", n, nrhs, b, ldb );
-    /* Print details of LU factorization */
-    print_matrix_rowmajor( "Details of LU factorization", n, n, A, lda );
-    /* Print pivot indices */
-    print_vector_lpk( "Pivot indices", n, ipiv );
-
-    free(A);
-    free(b);
-    free(ipiv);
-}
-
 // updates the alpha, kappa, c and conductivity values for all segments
 // takes into account state dependence etc, specific to the model used in [Yang]
 int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, double * rho_seg_n, double * R_seg_n, double * T_n, size_t J, double A, double B, double gamma, double T_c, double I_n, double I_c0, double rho_norm, double c_p, double T_ref, double R_seg) {
@@ -94,8 +43,8 @@ int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, doub
         }
     }
 
-    //print_vector(kappa_n, J);
     //print_vector(alpha_n, J);
+    //print_vector(kappa_n, J);
     //print_vector(c_n, J);
     //print_vector(rho_seg_n, J);
     //puts("");
@@ -189,11 +138,13 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
+    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", Delta, A, gamma, B);
+
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
     // declare the nanowire resistance and current density
     R[0] = 0;
-    double currentDensity_w;
+    double currentDensity_w = 0;
     double V_c_nm1 = 0;
     double V_c_n;
 
@@ -210,6 +161,12 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
 
     // main time loop
     for (unsigned n=1; n<N; ++n) {
+        // print progress
+        if ((n+1) % (N/100) == 0) {
+            if ((n+1) / (N/100) != 1) printf("\r");
+            printf("Progress: %7d / %7zu", n+1, N);
+            fflush(stdout);
+        }
         // advance the thermal model to the next time step after the initial step
         if (n > 1) {
             advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
@@ -227,19 +184,18 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
         // update the current nanowire resistance
         R[n] = sum_vector(R_seg_n, J);
         // update the current density through the nanowire
-        currentDensity_w = I[n]/(data->wireWidth*data->wireThickness);
+        currentDensity_w = I[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
-        advance_time_electric_basic(&I[n], &V_c_n, I[n-1], V_c_nm1, X, Y, R[n-1], R[n], data->R_L_std, data->I_b_std);
+        advance_time_electric(&I[n], &V_c_n, I[n-1], V_c_nm1, X, Y, R[n-1], R[n], data->R_L_std, data->I_b_std);
         // shift the data into the right position for the next loop
-        printf("V_c: %4.2e\n", V_c_n);
+        //printf("V_c: %4.2e\n", V_c_n);
         V_c_nm1 = V_c_n;
 
         //puts("Current I, and resistance R:");
         //print_vector(I, 10);
         //print_vector(R, 10);
+        //puts("");
     }
-
-    //test_lapack();
 
     // free allocated space
     free(alpha_n);
@@ -247,4 +203,9 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     free(c_n);
     free(rho_seg_n);
     free(R_seg_n);
+
+    // print result
+    puts("\nDone.");
+    res->exitValue = 0;
+    return 0;
 }

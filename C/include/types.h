@@ -5,9 +5,12 @@
 typedef struct _simres {
     size_t J;               // number of spatial samples
     size_t N;               // number of time samples
+    double * dX;            // delta X
+    double dt;              // delta t
     size_t numberOfT;       // number of temperature vectors that need to be measured
     size_t numberOfI;       // number of currents that need to be measured
     size_t numberOfR;       // number of resistances that need to be measured
+    size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
     double *** T;           // temperature matrices T[number][time][space]
     double ** I;            // current vectors I[number][time]
     double ** R;            // resistance vectors R[number][time]
@@ -22,6 +25,7 @@ typedef struct _simdata {
     size_t numberOfT;       // number of temperature vectors that need to be measured
     size_t numberOfI;       // number of currents that need to be measured
     size_t numberOfR;       // number of resistances that need to be measured
+    size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
     // physical dimensions
     double wireLength;      // length of the nanowire (divided into J segments)
     double wireThickness;   // thickness of the nanowire

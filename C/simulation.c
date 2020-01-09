@@ -13,14 +13,18 @@ int main(int argc, char * argv[]) {
     // Put in the experiment data and run the experiment
     SimData * data = calloc(1, sizeof(SimData));
     data->J = 1000;
-    data->N = 1000;
+    data->N = 10000;
     data->numberOfT = 1;
     data->numberOfI = 1;
     data->numberOfR = 1;
+
+    data->timeskip = 10;
+
     data->wireLength = 1.5E-6;//1.5E-8;//1.5E-6;
     data->wireThickness = 4E-9;
     data->wireWidth = 100E-9;
-    data->tMax = 1E-10;
+    data->tMax = 1E-9;
+
     data->T_c = 10.5;
     data->I_c0 = 20E-6;
     data->c_p = 9800;
@@ -28,6 +32,7 @@ int main(int argc, char * argv[]) {
     data->alpha = 8E5;
     data->T_sub = 2;
     data->T_sub_eps = 0.001;
+
     data->R_L_std = 50;
     data->C_m_std = 100E-9;
     data->I_b_std = 16.5E-6;
@@ -40,17 +45,33 @@ int main(int argc, char * argv[]) {
     SimRes * res = run_snspd_simulation(data, 0);
 
     FILE * fp = fopen("../simres/T.bin", "wb");
-    for (unsigned n=0; n<res->N; ++n) {
+    for (unsigned n=0; n<res->N; n += res->timeskip)
         fwrite(res->T[0][n], sizeof(double), res->J, fp);
-    }
     fclose(fp);
 
     fp = fopen("../simres/I.bin", "wb");
-    fwrite(res->I[0], sizeof(double), res->N, fp);
+    for (unsigned n=0; n<res->N; n += res->timeskip)
+        fwrite(&res->I[0][n], sizeof(double), 1, fp);
     fclose(fp);
 
     fp = fopen("../simres/R.bin", "wb");
-    fwrite(res->R[0], sizeof(double), res->N, fp);
+    for (unsigned n=0; n<res->N; n += res->timeskip)
+        fwrite(&res->R[0][n], sizeof(double), 1, fp);
+    fclose(fp);
+
+    fp = fopen("../simres/param.info", "w");
+    fprintf(fp, "%40s; %zu\n", "J (# of spatial elements)", res->J);
+    fprintf(fp, "%40s; %zu\n", "N (# of temporal elements)", res->N);
+    fprintf(fp, "%40s; %zu\n", "timeskip factor", res->timeskip);
+    fprintf(fp, "%40s; %zu\n", "# of nanowires", res->numberOfT);
+    fprintf(fp, "%40s; %zu\n", "# of currents", res->numberOfI);
+    fprintf(fp, "%40s; %zu\n", "# of resistances", res->numberOfR);
+    fprintf(fp, "%40s; ", "dX [m]");
+    for (unsigned i=0; i<res->numberOfT; ++i) {
+        if (i > 0) fprintf(fp, "; ");
+        fprintf(fp, "%8.6e\n", res->dX[i]);
+    }
+    fprintf(fp, "%40s; %8.6e\n", "dt [s]", res->dt);
     fclose(fp);
 
     free_simres(res);

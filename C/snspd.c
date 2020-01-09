@@ -26,9 +26,12 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     SimRes * res = calloc(1, sizeof(SimRes));
     res->J = J;
     res->N = N;
+
     res->numberOfT = data->numberOfT;
     res->numberOfI = data->numberOfI;
     res->numberOfR = data->numberOfR;
+
+    res->timeskip = data->timeskip;
 
     res->T = calloc(data->numberOfT, sizeof(double **));
     for (unsigned t=0; t<data->numberOfT; ++t) {
@@ -51,6 +54,10 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     // calculate delta x and delta t
     double dX = data->wireLength / (J - 1);
     double dt = data->tMax / (N - 1);
+
+    res->dX = calloc(res->numberOfT, sizeof(double));
+    res->dX[0] = dX;
+    res->dt = dt;
 
     switch(runType) {
         case 0:
