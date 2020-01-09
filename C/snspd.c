@@ -7,6 +7,7 @@
 #include "snspd.h"
 #include "helper.h"
 #include "yang.h"
+#include "yang_parallel.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
@@ -52,19 +53,22 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     }
 
     // calculate delta x and delta t
-    double dX = data->wireLength / (J - 1);
+    double dX_det = data->wireLength / (J - 1);
     double dt = data->tMax / (N - 1);
 
     res->dX = calloc(res->numberOfT, sizeof(double));
-    res->dX[0] = dX;
+    res->dX[0] = dX_det;
     res->dt = dt;
 
     switch(runType) {
         case 0:
-            run_yang(res, data, dX, dt);
+            run_yang(res, data, dX_det, dt);
+            break;
+        case 1:
+            run_yang_parallel(res, data, dX_det, dt);
             break;
         default:
-            printf("Unknown runtype %d...\nReturning empty result with error 1 (wrong runType)...", runType);
+            printf("Unknown runtype %d...\nReturning empty result with error 1 (wrong runtype)...", runType);
             res->exitValue = 1;
             return res;
     }

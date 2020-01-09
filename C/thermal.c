@@ -10,9 +10,9 @@
 //     it to the solver in the linalg code.
 int advance_time_thermal(double * T_n, double * T_np1, size_t J, double T_sub, double * alpha_n, double * c_n, double * rho_seg_n, double * kappa_n, double wireThickness, double currentDensity_w, double dt, double dX) {
     // allocate some space for the matrix defining diagonals and off diagonals and the right hand side
-    double lhsDiag_n[J];
-    double lhsOffDiag_n[J];
-    double rhs_n[J];
+    double * lhsDiag_n = calloc(J, sizeof(double));
+    double * lhsOffDiag_n = calloc(J, sizeof(double));
+    double * rhs_n = calloc(J, sizeof(double));
     double r, w, q;
 
     // fill in the boundaries
@@ -41,6 +41,10 @@ int advance_time_thermal(double * T_n, double * T_np1, size_t J, double T_sub, d
     //print_vector(T_n, J);
     //print_vector(T_np1, J);
     //puts("kappa, alpha, c, rho_seg");
+
+    free(lhsDiag_n);
+    free(lhsOffDiag_n);
+    free(rhs_n);
 
     return 0;
 }

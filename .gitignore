@@ -37,8 +37,8 @@
 *.hex
 C/bld/*
 !C/bld/.gitkeep
-simres/*
-!simres/.gitkeep
+sim_results/*
+!sim_results/.gitkeep
 
 # Debug files
 *.dSYM/

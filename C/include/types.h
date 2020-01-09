@@ -1,6 +1,10 @@
 #ifndef __TYPES_H__
 #define __TYPES_H__
 
+// some global constants
+const double Kb;            // boltzmann constant
+const double Lorentz;       // Lorentz number
+
 // structure that contains the result of the simulation of an snspd
 typedef struct _simres {
     size_t J;               // number of spatial samples
@@ -26,7 +30,7 @@ typedef struct _simdata {
     size_t numberOfI;       // number of currents that need to be measured
     size_t numberOfR;       // number of resistances that need to be measured
     size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
-    // physical dimensions
+    // physical dimensions detector wire
     double wireLength;      // length of the nanowire (divided into J segments)
     double wireThickness;   // thickness of the nanowire
     double wireWidth;       // width of the nanowire
@@ -48,6 +52,9 @@ typedef struct _simdata {
     double rho_norm_std;    // conductivity of the nanowire in normal state
     double L_w_std;         // kinetic inductance of the nanowire
     double T_ref_std;       // reference temperature for model parameters [Yang]
+    // data specific to the standard model with parallel filter (runtype 1)
+    double L_p_parallel;    // kinetic inductance of the parallel inductor
+    double R_p_parallel;    // resistance of the parallel resistor
 } SimData;
 
 void free_simres(SimRes * simRes);

@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -10,56 +11,103 @@
 #include "linalg.h"
 
 int main(int argc, char * argv[]) {
-    // Put in the experiment data and run the experiment
+    // check and open setup file
+    if (argc != 3) {
+        puts("Wrong number of arguments...\nUsage: ./simulation inputFile outputFolder\nExiting...");
+        exit(4);
+    }
+
+    printf("Input file:    %s\n", argv[1]);
+    printf("Output folder: %s\n", argv[2]);
+
+    FILE * fp;
+
+    if ((fp = fopen(argv[1], "r")) == NULL) {
+        printf("Something went wrong trying to open the file \"%s\"...\nExiting...\n", argv[1]);
+        exit(5);
+    }
+
+    // create throwaway variable for text from the setup file we don't use
+    char dump[500];
+
+    // put in the experiment data
     SimData * data = calloc(1, sizeof(SimData));
-    data->J = 1000;
-    data->N = 10000;
-    data->numberOfT = 1;
-    data->numberOfI = 1;
-    data->numberOfR = 1;
+    if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+    if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J, dump) < 1) exit(6);
+    if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
+    if (fscanf(fp, "%zu;%2000[^\n]\n", &data->numberOfT, dump) < 1) exit(6);
+    if (fscanf(fp, "%zu;%2000[^\n]\n", &data->numberOfI, dump) < 1) exit(6);
+    if (fscanf(fp, "%zu;%2000[^\n]\n", &data->numberOfR, dump) < 1) exit(6);
+    if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
 
-    data->timeskip = 10;
+    if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
-    data->wireLength = 1.5E-6;//1.5E-8;//1.5E-6;
-    data->wireThickness = 4E-9;
-    data->wireWidth = 100E-9;
-    data->tMax = 1E-9;
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireLength, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireThickness, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireWidth, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
 
-    data->T_c = 10.5;
-    data->I_c0 = 20E-6;
-    data->c_p = 9800;
-    data->c_e = 2400;
-    data->alpha = 8E5;
-    data->T_sub = 2;
-    data->T_sub_eps = 0.001;
+    if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
-    data->R_L_std = 50;
-    data->C_m_std = 100E-9;
-    data->I_b_std = 16.5E-6;
-    data->initHS_l_std = 15E-9;//0.25E-8;//15E-9;
-    data->initHS_T_std = 8;
-    data->rho_norm_std = data->wireThickness * 600;
-    data->L_w_std = 808E-9;
-    data->T_ref_std = 10;
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_c, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_c0, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->c_p, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->c_e, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->alpha, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_sub, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_sub_eps, dump) < 1) exit(6);
 
+    if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_L_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_m_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_l_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_T_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->rho_norm_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_w_std, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_ref_std, dump) < 1) exit(6);
+
+    if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p_parallel, dump) < 1) exit(6);
+    if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_p_parallel, dump) < 1) exit(6);
+
+    // run simulation
     SimRes * res = run_snspd_simulation(data, 0);
 
-    FILE * fp = fopen("../simres/T.bin", "wb");
+    // generate correct filenames
+    const char Tbin[] = "T.bin";
+    const char Ibin[] = "I.bin";
+    const char Rbin[] = "R.bin";
+    const char paramInfo[] = "param.info";
+    char *TFilename = malloc(strlen(argv[2]) + strlen(Tbin) + 1);
+    char *IFilename = malloc(strlen(argv[2]) + strlen(Ibin) + 1);
+    char *RFilename = malloc(strlen(argv[2]) + strlen(Rbin) + 1);
+    char *paramInfoFilename = malloc(strlen(argv[2]) + strlen(paramInfo) + 1);
+    snprintf(TFilename, strlen(argv[2]) + strlen(Tbin) + 1, "%s%s", argv[2], Tbin);
+    snprintf(IFilename, strlen(argv[2]) + strlen(Tbin) + 1, "%s%s", argv[2], Ibin);
+    snprintf(RFilename, strlen(argv[2]) + strlen(Tbin) + 1, "%s%s", argv[2], Rbin);
+    snprintf(paramInfoFilename, strlen(argv[2]) + strlen(paramInfo) + 1, "%s%s", argv[2], paramInfo);
+
+    // write data to binary files
+    fp = fopen(TFilename, "wb");
     for (unsigned n=0; n<res->N; n += res->timeskip)
         fwrite(res->T[0][n], sizeof(double), res->J, fp);
     fclose(fp);
 
-    fp = fopen("../simres/I.bin", "wb");
+    fp = fopen(IFilename, "wb");
     for (unsigned n=0; n<res->N; n += res->timeskip)
         fwrite(&res->I[0][n], sizeof(double), 1, fp);
     fclose(fp);
 
-    fp = fopen("../simres/R.bin", "wb");
+    fp = fopen(RFilename, "wb");
     for (unsigned n=0; n<res->N; n += res->timeskip)
         fwrite(&res->R[0][n], sizeof(double), 1, fp);
     fclose(fp);
 
-    fp = fopen("../simres/param.info", "w");
+    // write simulation parameters to file for readout
+    fp = fopen(paramInfoFilename, "w");
     fprintf(fp, "%40s; %zu\n", "J (# of spatial elements)", res->J);
     fprintf(fp, "%40s; %zu\n", "N (# of temporal elements)", res->N);
     fprintf(fp, "%40s; %zu\n", "timeskip factor", res->timeskip);

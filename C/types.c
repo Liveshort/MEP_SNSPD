@@ -2,6 +2,10 @@
 
 #include "types.h"
 
+// some global constants
+const double Kb = 1.3806503E-23;      // boltzmann constant
+const double Lorentz = 2.45E-8;       // Lorentz number
+
 // function that frees SimRes struct
 void free_simres(SimRes * res) {
     // first free all the matrix contents

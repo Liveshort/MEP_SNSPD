@@ -43,3 +43,17 @@ double sum_vector(double * vec, size_t J) {
 
     return sum;
 }
+
+// print progress
+void print_progress(unsigned n, size_t N) {
+    if ((n+1) % (N/100) == 0) {
+        if ((n+1) / (N/100) != 1) printf("\r");
+        printf("Progress: [");
+        for (unsigned i=0; i<50; ++i) {
+            if (i < (n+1) / (N/50)) printf("#");
+            else printf(" ");
+        }
+        printf("] %7d / %7zu", n+1, N);
+        fflush(stdout);
+    }
+}
