@@ -7,7 +7,6 @@
 #include "types.h"
 #include "helper.h"
 #include "thermal.h"
-#include "lapacke_example_aux.h"
 
 // returns the critical current for a segment of a given temperature T
 double I_cT_yang(double I_c0, double T, double T_c) {

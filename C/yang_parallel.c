@@ -7,10 +7,9 @@
 #include "types.h"
 #include "helper.h"
 #include "thermal.h"
-#include "lapacke_example_aux.h"
 
 // returns the critical current for a segment of a given temperature T
-double I_cT(double I_c0, double T, double T_c) {
+double I_cT_yang_parallel(double I_c0, double T, double T_c) {
     //puts("critical current:");
     //printf("%4.2e %4.2e %4.2e %4.2e\n", I_c0, T, T_c, I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
     return (I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
@@ -24,7 +23,7 @@ int update_thermal_values_yang_parallel(double * alpha_n, double * kappa_n, doub
         // alpha is taken to be state independent, not strictly true, but for more, see [Yang]
         alpha_n[j] = B * pow(T_n[j], 3);
         // model values for kappa, c and rho for normal state
-        if (T_n[j] > T_c || I_n > I_cT(I_c0, T_n[j], T_c)) {
+        if (T_n[j] > T_c || I_n > I_cT_yang_parallel(I_c0, T_n[j], T_c)) {
             kappa_n[j] = Lorentz*T_n[j]/rho_norm;
             c_n[j] = gamma*T_n[j] + c_p*pow(T_n[j]/T_ref, 3);
             rho_seg_n[j] = rho_norm;
