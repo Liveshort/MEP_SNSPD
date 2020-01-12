@@ -18,13 +18,13 @@ make all
 cd LAPACKE
 make
 ```
-* Four lib*.a files will have appeared in your LAPACK folder, copy those to the empty C/lib folder in the copy of the git repo on your pc
-* Move into the C folder in a terminal and run the following command to run a simulation:
+* Four `lib[***].a` files will have appeared in your LAPACK folder, copy those to the empty C/lib folder in the copy of the git repo on your pc
+* Open a terminal, move into the C folder and run the following command to run a simulation:
 ```bash
 make all && time make run args="../sim_setup/setup_yang.info ../sim_results/"
 ```
-* If all went well, everything will compile and a progress bar will appear. It should be done in a few seconds for a simple simulation.
-* To look at the results of your simulation, open the `Python/plot_test.py` file in your favorite editor/IDE and run the code there or with the following command:
+* If all went well, everything will compile and a progress bar will appear. It should be done in a few seconds for a simple simulation. The first argument is the input for the simulation, found in the sim_setup folder, and the second argument is the output folder, in this case the sim_results/ folder. Some `[***].bin` files will have appeared here, along with an info file containing information about the simulation in plain text (which you can read as well).
+* To look at the results of your simulation in nice figures, open the `Python/plot_test.py` file in your favorite editor/IDE and run the code there or with the following command:
 ```bash
 python3 plot_test.py
 ```
