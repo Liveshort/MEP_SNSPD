@@ -9,7 +9,7 @@
 #include "thermal.h"
 
 // returns the critical current for a segment of a given temperature T
-double I_cT_yang(double I_c0, double T, double T_c) {
+static inline double I_cT_yang(double I_c0, double T, double T_c) {
     //puts("critical current:");
     //printf("%4.2e %4.2e %4.2e %4.2e\n", I_c0, T, T_c, I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
     return (I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));

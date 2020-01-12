@@ -23,6 +23,8 @@ typedef struct _simres {
 
 // structure that contains the (input) data of the simulation of an snspd
 typedef struct _simdata {
+    // runtype
+    int runType;            // runtype of the simulation (0: yang, 1: yang parallel)
     // general info
     size_t J;               // number of spatial samples
     size_t N;               // number of time samples
