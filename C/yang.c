@@ -10,8 +10,6 @@
 
 // returns the critical current for a segment of a given temperature T
 static inline double I_cT_yang(double I_c0, double T, double T_c) {
-    //puts("critical current:");
-    //printf("%4.2e %4.2e %4.2e %4.2e\n", I_c0, T, T_c, I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
     return (I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
 }
 
@@ -38,12 +36,6 @@ int update_thermal_values_yang(double * alpha_n, double * kappa_n, double * c_n,
             R_seg_n[j] = 0;
         }
     }
-
-    //print_vector(alpha_n, J);
-    //print_vector(kappa_n, J);
-    //print_vector(c_n, J);
-    //print_vector(rho_seg_n, J);
-    //puts("");
 
     return 0;
 }
@@ -102,15 +94,14 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     // first locally save some important parameters that we will need all the time
     size_t J = data->J;
     size_t N = data->N;
+    size_t NE = data->N*data->ETratio;
     double ** T = res->T[0];
     double * I = res->I[0];
     double * R = res->R[0];
 
     // set up initial thermal values at t = 1, add a steady state time step at t = 0
-    for (unsigned j=0; j<J; ++j) {
-        T[0][j] = data->T_sub;
-        T[1][j] = data->T_sub;
-    }
+    fill_vector(T[0], J, data->T_sub);
+    fill_vector(T[1], J, data->T_sub);
     // determine halfway point and set up a beginning hotspot at t = 1
     unsigned halfway = J/2;
     unsigned initHS_segs = (unsigned) (data->initHS_l_std/dX) + 1;
@@ -155,38 +146,39 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     double X = (2*data->L_w_std)/dt;
     double Y = dt/(2*data->C_m_std);
 
+    // set a flag to check if done
+    int flag = 0;
+
     // main time loop
-    for (unsigned n=1; n<N; ++n) {
+    for (unsigned n=1; n<NE; ++n) {
         // print progress
-        print_progress(n, N);
+        print_progress(n, NE);
         // advance the thermal model to the next time step after the initial step
-        if (n > 1) {
-            advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+        if (n > 1 && n < N) {
+            if (cmp_vector(T[n-1], J, data->T_sub, data->T_sub_eps) || !data->allowOpt)
+                advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+            else {
+                fill_vector(T[n], J, data->T_sub);
+                flag = 1;
+            }
         }
 
-        // TODO: optimization with T_sub_eps
+        if (!flag && n < N) {
+            // first update the thermal values used in the differential equation,
+            //     the targets are included as the first five parameters
+            update_thermal_values_yang(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+            // update the current nanowire resistance
+            R[n] = sum_vector(R_seg_n, J);
+        } else {
+            R[n] = 0;
+        }
 
-        // first update the thermal values used in the differential equation,
-        //     the targets are included as the first five parameters
-        update_thermal_values_yang(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
-
-        //puts("R_seg");
-        //print_vector(R_seg_n, J);
-
-        // update the current nanowire resistance
-        R[n] = sum_vector(R_seg_n, J);
         // update the current density through the nanowire
         currentDensity_w = I[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
         advance_time_electric_yang(&I[n], &V_c_n, I[n-1], V_c_nm1, X, Y, R[n-1], R[n], data->R_L_std, data->I_b_std);
         // shift the data into the right position for the next loop
-        //printf("V_c: %4.2e\n", V_c_n);
         V_c_nm1 = V_c_n;
-
-        //puts("Current I, and resistance R:");
-        //print_vector(I, 10);
-        //print_vector(R, 10);
-        //puts("");
     }
 
     // free allocated space

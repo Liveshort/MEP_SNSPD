@@ -15,16 +15,21 @@
 // runType is used as follows:
 //   - 0: the snspd standard model is simulated. it assumes nothing but the snspd and a load
 //            resistor connected after a capacitor
+//   - 1: the snspd standard model with a parallel high pass filter is simulated. it assumes an
+//            snspd with a parallel resistor and inductor, connected to a load resistor and
+//            capacitor.
 SimRes * run_snspd_simulation(SimData * data, int runType) {
     printf("Runtype %d\n", runType);
     // first locally save some important parameters that we will need all the time
     size_t J = data->J;
     size_t N = data->N;
+    size_t NE = data->N*data->ETratio;
 
     // create the simulation result struct and allocate sufficient memory
     //   number of time samples N
     //   number of spacial samples J
     SimRes * res = calloc(1, sizeof(SimRes));
+    res->runType = data->runType;
     res->J = J;
     res->N = N;
 
@@ -33,6 +38,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     res->numberOfR = data->numberOfR;
 
     res->timeskip = data->timeskip;
+    res->ETratio = data->ETratio;
 
     res->T = calloc(data->numberOfT, sizeof(double **));
     for (unsigned t=0; t<data->numberOfT; ++t) {
@@ -44,12 +50,12 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
 
     res->I = calloc(data->numberOfI, sizeof(double *));
     for (unsigned i=0; i<data->numberOfI; ++i) {
-        res->I[i] = calloc(N, sizeof(double));
+        res->I[i] = calloc(NE, sizeof(double));
     }
 
     res->R = calloc(data->numberOfR, sizeof(double *));
     for (unsigned r=0; r<data->numberOfR; ++r) {
-        res->R[r] = calloc(N, sizeof(double));
+        res->R[r] = calloc(NE, sizeof(double));
     }
 
     // calculate delta x and delta t

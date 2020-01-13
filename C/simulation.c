@@ -16,22 +16,33 @@ int collect_data(FILE * fp, SimData * data) {
 
     // scan runtype
     if (fscanf(fp, "%d;%2000[^\n]\n", &data->runType, dump) < 1) exit(6);
+
+    // set up number of vectors needed based on the runtype
+    if (data->runType == 0) {
+        data->numberOfT = 1;
+        data->numberOfI = 1;
+        data->numberOfR = 1;
+    } else if (data->runType == 1) {
+        data->numberOfT = 1;
+        data->numberOfI = 2;
+        data->numberOfR = 1;
+    }
+
     // scan data
     if (data->runType == 0 || data->runType == 1) {
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->numberOfT, dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->numberOfI, dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->numberOfR, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireLength, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireThickness, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireWidth, dump) < 1) exit(6);
-        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
@@ -84,25 +95,33 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
 
     // write data to binary files
     fp = fopen(TFilename, "wb");
-    for (unsigned n=0; n<res->N; n += res->timeskip)
-        fwrite(res->T[0][n], sizeof(double), res->J, fp);
+    for (unsigned q=0; q<res->numberOfT; ++q) {
+        for (unsigned n=0; n<res->N; n += res->timeskip)
+        fwrite(res->T[q][n], sizeof(double), res->J, fp);
+    }
     fclose(fp);
 
     fp = fopen(IFilename, "wb");
-    for (unsigned n=0; n<res->N; n += res->timeskip)
-        fwrite(&res->I[0][n], sizeof(double), 1, fp);
+    for (unsigned q=0; q<res->numberOfI; ++q) {
+        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip)
+            fwrite(&res->I[q][n], sizeof(double), 1, fp);
+    }
     fclose(fp);
 
     fp = fopen(RFilename, "wb");
-    for (unsigned n=0; n<res->N; n += res->timeskip)
-        fwrite(&res->R[0][n], sizeof(double), 1, fp);
+    for (unsigned q=0; q<res->numberOfR; ++q) {
+        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip)
+            fwrite(&res->R[q][n], sizeof(double), 1, fp);
+    }
     fclose(fp);
 
     // write simulation parameters to file for readout
     fp = fopen(paramInfoFilename, "w");
+    fprintf(fp, "%40s; %d\n", "runtype of the simulation (0: yang, 1: yang parallel)", res->runType);
     fprintf(fp, "%40s; %zu\n", "J (# of spatial elements)", res->J);
     fprintf(fp, "%40s; %zu\n", "N (# of temporal elements)", res->N);
     fprintf(fp, "%40s; %zu\n", "timeskip factor", res->timeskip);
+    fprintf(fp, "%40s; %zu\n", "electrical / thermal time ratio", res->ETratio);
     fprintf(fp, "%40s; %zu\n", "# of nanowires", res->numberOfT);
     fprintf(fp, "%40s; %zu\n", "# of currents", res->numberOfI);
     fprintf(fp, "%40s; %zu\n", "# of resistances", res->numberOfR);

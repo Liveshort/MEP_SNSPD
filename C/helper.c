@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 
 void print_vector(double * vec, size_t J) {
     printf("[");
@@ -13,11 +14,8 @@ void print_vector(double * vec, size_t J) {
 double max_vector(double * vec, size_t J) {
     double max = -1E99;
 
-    for (unsigned j=0; j<J; ++j) {
-        if (vec[j] > max) {
-            max = vec[j];
-        }
-    }
+    for (unsigned j=0; j<J; ++j)
+        if (vec[j] > max) max = vec[j];
 
     return max;
 }
@@ -25,11 +23,8 @@ double max_vector(double * vec, size_t J) {
 double min_vector(double * vec, size_t J) {
     double min = 1E99;
 
-    for (unsigned j=0; j<J; ++j) {
-        if (vec[j] < min) {
-            min = vec[j];
-        }
-    }
+    for (unsigned j=0; j<J; ++j)
+        if (vec[j] < min) min = vec[j];
 
     return min;
 }
@@ -37,11 +32,24 @@ double min_vector(double * vec, size_t J) {
 double sum_vector(double * vec, size_t J) {
     double sum = 0;
 
-    for (unsigned j=0; j<J; ++j) {
+    for (unsigned j=0; j<J; ++j)
         sum += vec[j];
-    }
 
     return sum;
+}
+
+int cmp_vector(double * vec, size_t J, double val, double eps) {
+    for (unsigned j=0; j<J; ++j)
+        if (abs(vec[j] - val) > eps) return 1;
+
+    return 0;
+}
+
+int fill_vector(double * vec, size_t J, double val) {
+    for (unsigned j=0; j<J; ++j)
+        vec[j] = val;
+
+    return 0;
 }
 
 // print progress

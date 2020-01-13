@@ -56,13 +56,13 @@ int advance_time_electric_yang_parallel(double * I1_np1, double * I2_np1, double
     A[3] = R_L;
     A[4] = X2 + R_L;
     A[5] = -1;
-    
+
     A[6] = Y;
     A[7] = Y;
     A[8] = 1;
 
     b[0] = V_c_n + 2*R_L*I_b + (X1 - R_L - R_w_n)*I1_n - R_L*I2_n;
-    b[1] = V_c_n + 2*R_L*I_b + (X2 - R_L - 2*R_p)*I1_n - R_L*I1_n;
+    b[1] = V_c_n + 2*R_L*I_b + (X2 - R_L - 2*R_p)*I2_n - R_L*I1_n;
     b[2] = V_c_n + Y*(2*I_b - I1_n - I2_n);
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
@@ -88,6 +88,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
     // first locally save some important parameters that we will need all the time
     size_t J = data->J;
     size_t N = data->N;
+    size_t NE = data->N*data->ETratio;
     double ** T = res->T[0];
     double * I1 = res->I[0];
     double * I2 = res->I[1];
@@ -144,23 +145,33 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
     double X2 = (2*data->L_p_parallel)/dt;
     double Y = dt/(2*data->C_m_std);
 
+    // set a flag to check if done
+    int flag = 0;
+
     // main time loop
-    for (unsigned n=1; n<N; ++n) {
+    for (unsigned n=1; n<NE; ++n) {
         // print progress
-        print_progress(n, N);
+        print_progress(n, NE);
         // advance the thermal model to the next time step after the initial step
-        if (n > 1) {
-            advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+        if (n > 1 && n < N) {
+            if (cmp_vector(T[n-1], J, data->T_sub, data->T_sub_eps) || !data->allowOpt)
+                advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+            else {
+                fill_vector(T[n], J, data->T_sub);
+                flag = 1;
+            }
         }
 
-        // TODO: optimization with T_sub_eps
+        if (!flag && n < N) {
+            // first update the thermal values used in the differential equation,
+            //     the targets are included as the first five parameters
+            update_thermal_values_yang_parallel(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I1[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+            // update the current nanowire resistance
+            R[n] = sum_vector(R_seg_n, J);
+        } else {
+            R[n] = 0;
+        }
 
-        // first update the thermal values used in the differential equation,
-        //     the targets are included as the first five parameters
-        update_thermal_values_yang_parallel(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I1[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
-
-        // update the current nanowire resistance
-        R[n] = sum_vector(R_seg_n, J);
         // update the current density through the nanowire
         currentDensity_w = I1[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
