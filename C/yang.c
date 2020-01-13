@@ -107,10 +107,8 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     double * R = res->R[0];
 
     // set up initial thermal values at t = 1, add a steady state time step at t = 0
-    for (unsigned j=0; j<J; ++j) {
-        T[0][j] = data->T_sub;
-        T[1][j] = data->T_sub;
-    }
+    fill_vector(T[0], J, data->T_sub);
+    fill_vector(T[1], J, data->T_sub);
     // determine halfway point and set up a beginning hotspot at t = 1
     unsigned halfway = J/2;
     unsigned initHS_segs = (unsigned) (data->initHS_l_std/dX) + 1;
@@ -155,26 +153,33 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     double X = (2*data->L_w_std)/dt;
     double Y = dt/(2*data->C_m_std);
 
+    // set a flag to check if done
+    int flag = 0;
+
     // main time loop
     for (unsigned n=1; n<N; ++n) {
         // print progress
         print_progress(n, N);
         // advance the thermal model to the next time step after the initial step
         if (n > 1) {
-            advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+            if (cmp_vector(T[n-1], J, data->T_sub, data->T_sub_eps))
+                advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+            else {
+                fill_vector(T[n], J, data->T_sub);
+                flag = 1;
+            }
         }
 
-        // TODO: optimization with T_sub_eps
+        if (!flag) {
+            // first update the thermal values used in the differential equation,
+            //     the targets are included as the first five parameters
+            update_thermal_values_yang(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+            // update the current nanowire resistance
+            R[n] = sum_vector(R_seg_n, J);
+        } else {
+            R[n] = 0;
+        }
 
-        // first update the thermal values used in the differential equation,
-        //     the targets are included as the first five parameters
-        update_thermal_values_yang(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
-
-        //puts("R_seg");
-        //print_vector(R_seg_n, J);
-
-        // update the current nanowire resistance
-        R[n] = sum_vector(R_seg_n, J);
         // update the current density through the nanowire
         currentDensity_w = I[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
