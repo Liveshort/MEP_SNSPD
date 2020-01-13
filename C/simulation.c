@@ -22,10 +22,12 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfT = 1;
         data->numberOfI = 1;
         data->numberOfR = 1;
+        data->numberOfC = 1;
     } else if (data->runType == 1) {
         data->numberOfT = 1;
         data->numberOfI = 2;
         data->numberOfR = 1;
+        data->numberOfC = 1;
     }
 
     // scan data
@@ -57,6 +59,7 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_L_std, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_s_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_m_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_l_std, dump) < 1) exit(6);
@@ -83,14 +86,17 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     const char Tbin[] = "T.bin";
     const char Ibin[] = "I.bin";
     const char Rbin[] = "R.bin";
+    const char Cbin[] = "V_c.bin";
     const char paramInfo[] = "param.info";
     char *TFilename = calloc(strlen(outputPath) + strlen(Tbin) + 1, sizeof(char));
     char *IFilename = calloc(strlen(outputPath) + strlen(Ibin) + 1, sizeof(char));
     char *RFilename = calloc(strlen(outputPath) + strlen(Rbin) + 1, sizeof(char));
+    char *CFilename = calloc(strlen(outputPath) + strlen(Cbin) + 1, sizeof(char));
     char *paramInfoFilename = calloc(strlen(outputPath) + strlen(paramInfo) + 1, sizeof(char));
     snprintf(TFilename, strlen(outputPath) + strlen(Tbin) + 1, "%s%s", outputPath, Tbin);
-    snprintf(IFilename, strlen(outputPath) + strlen(Tbin) + 1, "%s%s", outputPath, Ibin);
-    snprintf(RFilename, strlen(outputPath) + strlen(Tbin) + 1, "%s%s", outputPath, Rbin);
+    snprintf(IFilename, strlen(outputPath) + strlen(Ibin) + 1, "%s%s", outputPath, Ibin);
+    snprintf(RFilename, strlen(outputPath) + strlen(Rbin) + 1, "%s%s", outputPath, Rbin);
+    snprintf(CFilename, strlen(outputPath) + strlen(Cbin) + 1, "%s%s", outputPath, Cbin);
     snprintf(paramInfoFilename, strlen(outputPath) + strlen(paramInfo) + 1, "%s%s", outputPath, paramInfo);
 
     // write data to binary files
@@ -115,27 +121,36 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     }
     fclose(fp);
 
+    fp = fopen(CFilename, "wb");
+    for (unsigned q=0; q<res->numberOfC; ++q) {
+        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip)
+            fwrite(&res->V_c[q][n], sizeof(double), 1, fp);
+    }
+    fclose(fp);
+
     // write simulation parameters to file for readout
     fp = fopen(paramInfoFilename, "w");
-    fprintf(fp, "%40s; %d\n", "runtype of the simulation (0: yang, 1: yang parallel)", res->runType);
-    fprintf(fp, "%40s; %zu\n", "J (# of spatial elements)", res->J);
-    fprintf(fp, "%40s; %zu\n", "N (# of temporal elements)", res->N);
-    fprintf(fp, "%40s; %zu\n", "timeskip factor", res->timeskip);
-    fprintf(fp, "%40s; %zu\n", "electrical / thermal time ratio", res->ETratio);
-    fprintf(fp, "%40s; %zu\n", "# of nanowires", res->numberOfT);
-    fprintf(fp, "%40s; %zu\n", "# of currents", res->numberOfI);
-    fprintf(fp, "%40s; %zu\n", "# of resistances", res->numberOfR);
-    fprintf(fp, "%40s; ", "dX [m]");
+    fprintf(fp, "%50s; %d\n", "runtype of the simulation", res->runType);
+    fprintf(fp, "%50s; %zu\n", "J (# of spatial elements)", res->J);
+    fprintf(fp, "%50s; %zu\n", "N (# of temporal elements)", res->N);
+    fprintf(fp, "%50s; %zu\n", "timeskip factor", res->timeskip);
+    fprintf(fp, "%50s; %zu\n", "electrical / thermal time ratio", res->ETratio);
+    fprintf(fp, "%50s; %zu\n", "# of nanowires", res->numberOfT);
+    fprintf(fp, "%50s; %zu\n", "# of currents", res->numberOfI);
+    fprintf(fp, "%50s; %zu\n", "# of resistances", res->numberOfR);
+    fprintf(fp, "%50s; %zu\n", "# of capacitor voltages", res->numberOfC);
+    fprintf(fp, "%50s; ", "dX [m]");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");
         fprintf(fp, "%8.6e\n", res->dX[i]);
     }
-    fprintf(fp, "%40s; %8.6e\n", "dt [s]", res->dt);
+    fprintf(fp, "%50s; %8.6e\n", "dt [s]", res->dt);
     fclose(fp);
 
     free(TFilename);
     free(IFilename);
     free(RFilename);
+    free(CFilename);
     free(paramInfoFilename);
 }
 

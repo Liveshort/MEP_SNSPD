@@ -15,6 +15,7 @@ with open("../sim_results/param.info") as file:
     numberOfT = int(paramList.pop(0))
     numberOfI = int(paramList.pop(0))
     numberOfR = int(paramList.pop(0))
+    numberOfC = int(paramList.pop(0))
     dX = float(paramList.pop(0))
     dt = float(paramList.pop(0))
 
@@ -24,6 +25,7 @@ T = []
 I1 = []
 I2 = []
 R = []
+V_c = []
 
 with open("../sim_results/T.bin", "rb") as file:
     for (item, ) in struct.iter_unpack('d', file.read(8*J*N//timeskip)):
@@ -46,6 +48,12 @@ with open("../sim_results/R.bin", "rb") as file:
         R.append(item)
 
 R = np.array(R)
+
+with open("../sim_results/V_c.bin", "rb") as file:
+    for (item, ) in struct.iter_unpack('d', file.read(8*N//timeskip*ETratio)):
+        V_c.append(item)
+
+V_c = np.array(V_c)
 
 t = np.arange(0, N-1, timeskip)
 tE = np.arange(0, N*ETratio-1, timeskip)

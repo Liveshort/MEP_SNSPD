@@ -40,7 +40,7 @@ int update_thermal_values_yang_parallel(double * alpha_n, double * kappa_n, doub
     return 0;
 }
 
-int advance_time_electric_yang_parallel(double * I1_np1, double * I2_np1, double * V_c_np1, double I1_n, double I2_n, double V_c_n, double X1, double X2, double Y, double R_w_n, double R_w_np1, double R_p, double R_L, double I_b) {
+int advance_time_electric_yang_parallel(double * I1_np1, double * I2_np1, double * V_c_np1, double I1_n, double I2_n, double V_c_n, double X1, double X2, double Y, double R_w_n, double R_w_np1, double R_p, double R_L, double R_s, double I_b) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
     n = 3; nrhs = 1;
@@ -49,7 +49,7 @@ int advance_time_electric_yang_parallel(double * I1_np1, double * I2_np1, double
     double * b = calloc(n*nrhs, sizeof(double));
     lapack_int * ipiv = calloc(n, sizeof(lapack_int));
 
-    A[0] = X1 + R_L + R_w_np1;
+    A[0] = X1 + R_L + R_w_np1 + R_s;
     A[1] = R_L;
     A[2] = -1;
 
@@ -61,7 +61,7 @@ int advance_time_electric_yang_parallel(double * I1_np1, double * I2_np1, double
     A[7] = Y;
     A[8] = 1;
 
-    b[0] = V_c_n + 2*R_L*I_b + (X1 - R_L - R_w_n)*I1_n - R_L*I2_n;
+    b[0] = V_c_n + 2*R_L*I_b + (X1 - R_L - R_w_n - R_s)*I1_n - R_L*I2_n;
     b[1] = V_c_n + 2*R_L*I_b + (X2 - R_L - 2*R_p)*I2_n - R_L*I1_n;
     b[2] = V_c_n + Y*(2*I_b - I1_n - I2_n);
 
@@ -93,6 +93,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
     double * I1 = res->I[0];
     double * I2 = res->I[1];
     double * R = res->R[0];
+    double * V_c = res->V_c[0];
 
     // set up initial thermal values at t = 1, add a steady state time step at t = 0
     for (unsigned j=0; j<J; ++j) {
@@ -112,8 +113,10 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
         T[1][j] = data->initHS_T_std;
     }
     // set up initial current through the snspd in steady state (t = 0)
-    I1[0] = data->I_b_std;
-    I2[0] = 0;
+    I1[0] = data->R_p_parallel*data->I_b_std / (data->R_s_std + data->R_p_parallel);
+    I2[0] = data->R_s_std*data->I_b_std / (data->R_s_std + data->R_p_parallel);
+    // set up initial voltage drop over the capacitor
+    V_c[0] = (data->R_s_std*data->R_p_parallel)*data->I_b_std / (data->R_s_std + data->R_p_parallel);
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -130,8 +133,6 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
     // declare the nanowire resistance and current density
     R[0] = 0;
     double currentDensity_w = 0;
-    double V_c_nm1 = 0;
-    double V_c_n;
 
     // allocate space for the state and temperature dependent variables for each time step
     double * alpha_n = calloc(J, sizeof(double));
@@ -175,10 +176,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
         // update the current density through the nanowire
         currentDensity_w = I1[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
-        advance_time_electric_yang_parallel(&I1[n], &I2[n], &V_c_n, I1[n-1], I2[n-1], V_c_nm1, X1, X2, Y, R[n-1], R[n], data->R_p_parallel, data->R_L_std, data->I_b_std);
-        // shift the data into the right position for the next loop
-        V_c_nm1 = V_c_n;
-
+        advance_time_electric_yang_parallel(&I1[n], &I2[n], &V_c[n], I1[n-1], I2[n-1], V_c[n-1], X1, X2, Y, R[n-1], R[n], data->R_p_parallel, data->R_L_std, data->R_s_std, data->I_b_std);
     }
 
     // free allocated space

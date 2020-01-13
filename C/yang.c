@@ -40,7 +40,7 @@ int update_thermal_values_yang(double * alpha_n, double * kappa_n, double * c_n,
     return 0;
 }
 
-int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, double V_c_n, double X, double Y, double R_w_n, double R_w_np1, double R_L, double I_b) {
+int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, double V_c_n, double X, double Y, double R_w_n, double R_w_np1, double R_L, double R_s, double I_b) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
     n = 2; nrhs = 1;
@@ -49,12 +49,12 @@ int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, dou
     double * b = calloc(n*nrhs, sizeof(double));
     lapack_int * ipiv = calloc(n, sizeof(lapack_int));
 
-    A[0] = X + R_L + R_w_np1;
+    A[0] = X + R_L + R_w_np1 + R_s;
     A[1] = -1;
     A[2] = Y;
     A[3] = 1;
 
-    b[0] = V_c_n + 2*R_L*I_b + (X - R_L - R_w_n)*I_n;
+    b[0] = V_c_n + 2*R_L*I_b + (X - R_L - R_w_n - R_s)*I_n;
     b[1] = V_c_n + Y*(2*I_b - I_n);
 
     //print_matrix_rowmajor( "Entry Matrix A", n, n, A, n );
@@ -98,6 +98,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     double ** T = res->T[0];
     double * I = res->I[0];
     double * R = res->R[0];
+    double * V_c = res->V_c[0];
 
     // set up initial thermal values at t = 1, add a steady state time step at t = 0
     fill_vector(T[0], J, data->T_sub);
@@ -116,6 +117,8 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     }
     // set up initial current through the snspd in steady state (t = 0)
     I[0] = data->I_b_std;
+    // set up initial voltage drop over the capacitor
+    V_c[0] = data->R_s_std*data->I_b_std;
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -132,8 +135,6 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
     // declare the nanowire resistance and current density
     R[0] = 0;
     double currentDensity_w = 0;
-    double V_c_nm1 = 0;
-    double V_c_n;
 
     // allocate space for the state and temperature dependent variables for each time step
     double * alpha_n = calloc(J, sizeof(double));
@@ -176,9 +177,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt) {
         // update the current density through the nanowire
         currentDensity_w = I[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
-        advance_time_electric_yang(&I[n], &V_c_n, I[n-1], V_c_nm1, X, Y, R[n-1], R[n], data->R_L_std, data->I_b_std);
-        // shift the data into the right position for the next loop
-        V_c_nm1 = V_c_n;
+        advance_time_electric_yang(&I[n], &V_c[n], I[n-1], V_c[n-1], X, Y, R[n-1], R[n], data->R_L_std, data->R_s_std, data->I_b_std);
     }
 
     // free allocated space

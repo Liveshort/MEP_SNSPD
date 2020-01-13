@@ -17,9 +17,11 @@ typedef struct _simres {
     size_t numberOfT;       // number of temperature vectors that need to be measured
     size_t numberOfI;       // number of currents that need to be measured
     size_t numberOfR;       // number of resistances that need to be measured
+    size_t numberOfC;       // number of capacitors that need to be measured
     double *** T;           // temperature matrices T[number][time][space]
     double ** I;            // current vectors I[number][time]
     double ** R;            // resistance vectors R[number][time]
+    double ** V_c;          // voltage vectors for capacitors
     int exitValue;          // 0 for succes, anything else for error
 } SimRes;
 
@@ -37,6 +39,7 @@ typedef struct _simdata {
     size_t numberOfT;       // number of temperature vectors that need to be measured
     size_t numberOfI;       // number of currents that need to be measured
     size_t numberOfR;       // number of resistances that need to be measured
+    size_t numberOfC;       // number of capacitors that need to be measured
     // physical dimensions detector wire
     double wireLength;      // length of the nanowire (divided into J segments)
     double wireThickness;   // thickness of the nanowire
@@ -51,6 +54,7 @@ typedef struct _simdata {
     double T_sub_eps;       // sub temp epsilon, optimization strategy (detect steady state)
     // data specific to the standard model (runtype 0)
     double R_L_std;         // load resistor
+    double R_s_std;         // series resistor
     double C_m_std;         // dc port bias tee
     double I_b_std;         // bias current
     double initHS_l_std;    // initial hotspot length (to simulate a photon hit)
