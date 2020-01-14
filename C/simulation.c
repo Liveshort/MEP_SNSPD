@@ -109,21 +109,21 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
 
     fp = fopen(IFilename, "wb");
     for (unsigned q=0; q<res->numberOfI; ++q) {
-        for (unsigned n=0; n<res->N*res->ETratio; ++n)
+        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip/10)
             fwrite(&res->I[q][n], sizeof(double), 1, fp);
     }
     fclose(fp);
 
     fp = fopen(RFilename, "wb");
     for (unsigned q=0; q<res->numberOfR; ++q) {
-        for (unsigned n=0; n<res->N*res->ETratio; ++n)
+        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip/10)
             fwrite(&res->R[q][n], sizeof(double), 1, fp);
     }
     fclose(fp);
 
     fp = fopen(CFilename, "wb");
     for (unsigned q=0; q<res->numberOfC; ++q) {
-        for (unsigned n=0; n<res->N*res->ETratio; ++n)
+        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip/10)
             fwrite(&res->V_c[q][n], sizeof(double), 1, fp);
     }
     fclose(fp);
