@@ -23,6 +23,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     // first locally save some important parameters that we will need all the time
     size_t J = data->J;
     size_t N = data->N;
+    size_t NT = data->N/data->timeskip;
     size_t NE = data->N*data->ETratio;
 
     // create the simulation result struct and allocate sufficient memory
@@ -43,8 +44,8 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
 
     res->T = calloc(data->numberOfT, sizeof(double **));
     for (unsigned t=0; t<data->numberOfT; ++t) {
-        res->T[t] = calloc(N, sizeof(double *));
-        for (unsigned n=0; n<N; ++n)
+        res->T[t] = calloc(NT, sizeof(double *));
+        for (unsigned n=0; n<NT; ++n)
             res->T[t][n] = calloc(J, sizeof(double));
     }
 
@@ -70,10 +71,10 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
 
     switch(runType) {
         case 0:
-            run_yang(res, data, dX_det, dt);
+            run_yang(res, data, dX_det, dt, J, N, NT, NE);
             break;
         case 1:
-            run_yang_parallel(res, data, dX_det, dt);
+            run_yang_parallel(res, data, dX_det, dt, J, N, NT, NE);
             break;
         default:
             printf("Unknown runtype %d...\nReturning empty result with error 1 (wrong runtype)...", runType);

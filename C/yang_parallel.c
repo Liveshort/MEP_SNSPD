@@ -84,22 +84,24 @@ int advance_time_electric_yang_parallel(double * I1_np1, double * I2_np1, double
 }
 
 // main function that runs the simulation
-int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
+int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NT, size_t NE) {
     // first locally save some important parameters that we will need all the time
-    size_t J = data->J;
-    size_t N = data->N;
-    size_t NE = data->N*data->ETratio;
     double ** T = res->T[0];
     double * I1 = res->I[0];
     double * I2 = res->I[1];
     double * R = res->R[0];
     double * V_c = res->V_c[0];
 
+    // set up vectors to temporarily save the current and next T
+    // this saves a lot of memory for larger simulations
+    double * T_stash_1 = calloc(J, sizeof(double));
+    double * T_stash_2 = calloc(J, sizeof(double));
+    double * T_prev = T[0];
+    double * T_curr = T[1];
+
     // set up initial thermal values at t = 1, add a steady state time step at t = 0
-    for (unsigned j=0; j<J; ++j) {
-        T[0][j] = data->T_sub;
-        T[1][j] = data->T_sub;
-    }
+    fill_vector(T_prev, J, data->T_sub);
+    fill_vector(T_curr, J, data->T_sub);
     // determine halfway point and set up a beginning hotspot at t = 1
     unsigned halfway = J/2;
     unsigned initHS_segs = (unsigned) (data->initHS_l_std/dX) + 1;
@@ -110,13 +112,16 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
         return 2;
     }
     for (unsigned j=halfway - initHS_segs/2; j<halfway + initHS_segs/2; ++j) {
-        T[1][j] = data->initHS_T_std;
+        T_curr[j] = data->initHS_T_std;
     }
-    // set up initial current through the snspd in steady state (t = 0)
-    I1[0] = data->R_p_parallel*data->I_b_std / (data->R_s_std + data->R_p_parallel);
-    I2[0] = data->R_s_std*data->I_b_std / (data->R_s_std + data->R_p_parallel);
-    // set up initial voltage drop over the capacitor
-    V_c[0] = (data->R_s_std*data->R_p_parallel)*data->I_b_std / (data->R_s_std + data->R_p_parallel);
+
+    for (unsigned n=0; n<=data->timeskip; ++n) {
+        // set up initial current through the snspd in steady state (t = 0)
+        I1[n] = data->R_p_parallel*data->I_b_std / (data->R_s_std + data->R_p_parallel);
+        I2[n] = data->R_s_std*data->I_b_std / (data->R_s_std + data->R_p_parallel);
+        // set up initial voltage drop over the capacitor
+        V_c[n] = (data->R_s_std*data->R_p_parallel)*data->I_b_std / (data->R_s_std + data->R_p_parallel);
+    }
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -131,7 +136,8 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
     // declare the nanowire resistance and current density
-    R[0] = 0;
+    for (unsigned n=0; n<=data->timeskip; ++n)
+        R[0] = 0;
     double currentDensity_w = 0;
 
     // allocate space for the state and temperature dependent variables for each time step
@@ -147,26 +153,27 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
     double Y = dt/(2*data->C_m_std);
 
     // set a flag to check if done
-    int flag = 0;
+    int flagDone = 0;
 
     // main time loop
-    for (unsigned n=1; n<NE; ++n) {
+    for (unsigned n=data->timeskip+1; n<NE; ++n) {
         // print progress
         print_progress(n, NE);
+
         // advance the thermal model to the next time step after the initial step
-        if (n > 1 && n < N) {
-            if (cmp_vector(T[n-1], J, data->T_sub, data->T_sub_eps) || !data->allowOpt)
-                advance_time_thermal(T[n-1], T[n], J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
+        if (n > data->timeskip+1 && n < N) {
+            if (cmp_vector(T_prev, J, data->T_sub, data->T_sub_eps) || !data->allowOpt)
+                advance_time_thermal(T_prev, T_curr, J, data->T_sub, alpha_n, c_n, rho_seg_n, kappa_n, data->wireThickness, currentDensity_w, dt, dX);
             else {
-                fill_vector(T[n], J, data->T_sub);
-                flag = 1;
+                fill_vector(T_curr, J, data->T_sub);
+                flagDone = 1;
             }
         }
 
-        if (!flag && n < N) {
+        if (!flagDone && n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
-            update_thermal_values_yang_parallel(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T[n], J, A, B, gamma, data->T_c, I1[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+            update_thermal_values_yang_parallel(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T_curr, J, A, B, gamma, data->T_c, I1[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
             // update the current nanowire resistance
             R[n] = sum_vector(R_seg_n, J);
         } else {
@@ -177,9 +184,22 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt) {
         currentDensity_w = I1[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
         advance_time_electric_yang_parallel(&I1[n], &I2[n], &V_c[n], I1[n-1], I2[n-1], V_c[n-1], X1, X2, Y, R[n-1], R[n], data->R_p_parallel, data->R_L_std, data->R_s_std, data->I_b_std);
+
+        // shuffle the T pointers around so the old and new timestep don't point to the same array
+        T_prev = T_curr;
+        if (n % data->timeskip == 0)
+            T_curr = T[n/data->timeskip];
+        else {
+            if (T_prev == T_stash_1)
+                T_curr = T_stash_2;
+            else
+                T_curr = T_stash_1;
+        }
     }
 
     // free allocated space
+    free(T_stash_1);
+    free(T_stash_2);
     free(alpha_n);
     free(kappa_n);
     free(c_n);

@@ -34,29 +34,29 @@ with open("../sim_results/T.bin", "rb") as file:
 T = np.array(T).reshape(N//timeskip, J)
 
 with open("../sim_results/I.bin", "rb") as file:
-    for (item, ) in struct.iter_unpack('d', file.read(8*N//timeskip*ETratio)):
+    for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio)):
         I1.append(item)
     if runtype == 1:
-        for (item, ) in struct.iter_unpack('d', file.read(8*N//timeskip*ETratio)):
+        for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio)):
             I2.append(item)
 
 I1 = np.array(I1)
 I2 = np.array(I2)
 
 with open("../sim_results/R.bin", "rb") as file:
-    for (item, ) in struct.iter_unpack('d', file.read(8*N//timeskip*ETratio)):
+    for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio)):
         R.append(item)
 
 R = np.array(R)
 
 with open("../sim_results/V_c.bin", "rb") as file:
-    for (item, ) in struct.iter_unpack('d', file.read(8*N//timeskip*ETratio)):
+    for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio)):
         V_c.append(item)
 
 V_c = np.array(V_c)
 
 t = np.arange(0, N-1, timeskip)
-tE = np.arange(0, N*ETratio-1, timeskip)
+tE = np.arange(0, N*ETratio)
 x = np.linspace(-(J//2 - 1)*dX, J//2*dX, J)
 
 plt.contourf(t*dt*1e9, x*1e6, T.transpose() + 1e-12, 50, cmap="hot")

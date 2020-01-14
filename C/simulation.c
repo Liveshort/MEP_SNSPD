@@ -102,28 +102,28 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     // write data to binary files
     fp = fopen(TFilename, "wb");
     for (unsigned q=0; q<res->numberOfT; ++q) {
-        for (unsigned n=0; n<res->N; n += res->timeskip)
+        for (unsigned n=0; n<res->N/res->timeskip; ++n)
         fwrite(res->T[q][n], sizeof(double), res->J, fp);
     }
     fclose(fp);
 
     fp = fopen(IFilename, "wb");
     for (unsigned q=0; q<res->numberOfI; ++q) {
-        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip)
+        for (unsigned n=0; n<res->N*res->ETratio; ++n)
             fwrite(&res->I[q][n], sizeof(double), 1, fp);
     }
     fclose(fp);
 
     fp = fopen(RFilename, "wb");
     for (unsigned q=0; q<res->numberOfR; ++q) {
-        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip)
+        for (unsigned n=0; n<res->N*res->ETratio; ++n)
             fwrite(&res->R[q][n], sizeof(double), 1, fp);
     }
     fclose(fp);
 
     fp = fopen(CFilename, "wb");
     for (unsigned q=0; q<res->numberOfC; ++q) {
-        for (unsigned n=0; n<res->N*res->ETratio; n += res->timeskip)
+        for (unsigned n=0; n<res->N*res->ETratio; ++n)
             fwrite(&res->V_c[q][n], sizeof(double), 1, fp);
     }
     fclose(fp);

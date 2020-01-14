@@ -16,7 +16,7 @@ void free_simres(SimRes * res) {
     for (unsigned v=0; v<res->numberOfR; ++v)
         free(res->V_c[v]);
     for (unsigned t=0; t<res->numberOfT; ++t) {
-        for (unsigned n=0; n<res->N; ++n)
+        for (unsigned n=0; n<res->N/res->timeskip; ++n)
             free(res->T[t][n]);
         free(res->T[t]);
     }
