@@ -28,13 +28,18 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfI = 2;
         data->numberOfR = 1;
         data->numberOfC = 1;
+    } else if (data->runType == 2) {
+        data->numberOfT = 2;
+        data->numberOfI = 2;
+        data->numberOfR = 2;
+        data->numberOfC = 1;
     }
 
-    // scan data
+    // scan data runtype 0 and 1
     if (data->runType == 0 || data->runType == 1) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
@@ -76,6 +81,59 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_p_parallel, dump) < 1) exit(6);
     }
 
+    // scan data runtype 2 and 3
+    if (data->runType == 2) {
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J1, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireLength, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireThickness, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireWidth, dump) < 1) exit(6);
+
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireLength_1, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireThickness_1, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->wireWidth_1, dump) < 1) exit(6);
+
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_c, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->c_p, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->c_e, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->alpha, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_sub, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_sub_eps, dump) < 1) exit(6);
+
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_L_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_s0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_s1_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_small_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_01_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_01_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_m_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b1_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_l_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_T_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->rho_norm_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_w0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_w1_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_ref_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_c0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_c1_wtf, dump) < 1) exit(6);
+    }
+
     fclose(fp);
 
     return 0;
@@ -103,7 +161,7 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     fp = fopen(TFilename, "wb");
     for (unsigned q=0; q<res->numberOfT; ++q) {
         for (unsigned n=0; n<res->N/res->timeskip; ++n)
-        fwrite(res->T[q][n], sizeof(double), res->J, fp);
+        fwrite(res->T[q][n], sizeof(double), res->J[q], fp);
     }
     fclose(fp);
 
@@ -131,8 +189,12 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     // write simulation parameters to file for readout
     fp = fopen(paramInfoFilename, "w");
     fprintf(fp, "%50s; %d\n", "runtype of the simulation", res->runType);
-    fprintf(fp, "%50s; %zu\n", "J (# of spatial elements)", res->J);
-    fprintf(fp, "%50s; %zu\n", "N (# of temporal elements)", res->N);
+    fprintf(fp, "%50s; ", "J (# of spatial elements)");
+    for (unsigned i=0; i<res->numberOfT; ++i) {
+        if (i > 0) fprintf(fp, "; ");
+        fprintf(fp, "%zu", res->J[i]);
+    }
+    fprintf(fp, "\n%50s; %zu\n", "N (# of temporal elements)", res->N);
     fprintf(fp, "%50s; %zu\n", "timeskip factor", res->timeskip);
     fprintf(fp, "%50s; %zu\n", "electrical / thermal time ratio", res->ETratio);
     fprintf(fp, "%50s; %zu\n", "# of nanowires", res->numberOfT);
@@ -142,9 +204,9 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     fprintf(fp, "%50s; ", "dX [m]");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");
-        fprintf(fp, "%8.6e\n", res->dX[i]);
+        fprintf(fp, "%8.6e", res->dX[i]);
     }
-    fprintf(fp, "%50s; %8.6e\n", "dt [s]", res->dt);
+    fprintf(fp, "\n%50s; %8.6e\n", "dt [s]", res->dt);
     fclose(fp);
 
     free(TFilename);

@@ -20,6 +20,7 @@ void free_simres(SimRes * res) {
             free(res->T[t][n]);
         free(res->T[t]);
     }
+    free(res->J);
     free(res->T);
     free(res->I);
     free(res->R);

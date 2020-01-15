@@ -8,6 +8,7 @@
 #include "helper.h"
 #include "yang.h"
 #include "yang_parallel.h"
+#include "two_stage_waterfall_res.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
@@ -20,8 +21,10 @@
 //            capacitor.
 SimRes * run_snspd_simulation(SimData * data, int runType) {
     printf("Runtype %d\n", runType);
+    size_t J0, J1;
     // first locally save some important parameters that we will need all the time
-    size_t J = data->J;
+    J0 = data->J0;
+    if (data->numberOfT > 1) J1 = data->J1;
     size_t N = data->N;
     size_t NT = data->N/data->timeskip;
     size_t NE = data->N*data->ETratio;
@@ -31,7 +34,9 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     //   number of spacial samples J
     SimRes * res = calloc(1, sizeof(SimRes));
     res->runType = data->runType;
-    res->J = J;
+    res->J = calloc(data->numberOfT, sizeof(size_t));
+    res->J[0] = J0;
+    if (data->numberOfT > 1) res->J[1] = J1;
     res->N = N;
 
     res->numberOfT = data->numberOfT;
@@ -46,7 +51,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     for (unsigned t=0; t<data->numberOfT; ++t) {
         res->T[t] = calloc(NT, sizeof(double *));
         for (unsigned n=0; n<NT; ++n)
-            res->T[t][n] = calloc(J, sizeof(double));
+            res->T[t][n] = calloc(res->J[t], sizeof(double));
     }
 
     res->I = calloc(data->numberOfI, sizeof(double *));
@@ -62,19 +67,20 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
         res->V_c[v] = calloc(NE, sizeof(double));
 
     // calculate delta x and delta t
-    double dX_det = data->wireLength / (J - 1);
-    double dt = data->tMax / (N - 1);
-
     res->dX = calloc(res->numberOfT, sizeof(double));
-    res->dX[0] = dX_det;
-    res->dt = dt;
+    res->dX[0] = data->wireLength / (J0 - 1);
+    if (data->numberOfT > 1) res->dX[1] = data->wireLength_1 / (J1 - 1);
+    res->dt = data->tMax / (N - 1);
 
     switch(runType) {
         case 0:
-            run_yang(res, data, dX_det, dt, J, N, NT, NE);
+            run_yang(res, data, res->dX[0], res->dt, J0, N, NT, NE);
             break;
         case 1:
-            run_yang_parallel(res, data, dX_det, dt, J, N, NT, NE);
+            run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NT, NE);
+            break;
+        case 2:
+            run_two_stage_waterfall_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
             break;
         default:
             printf("Unknown runtype %d...\nReturning empty result with error 1 (wrong runtype)...", runType);

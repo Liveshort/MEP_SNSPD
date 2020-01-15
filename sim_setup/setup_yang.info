@@ -3,8 +3,8 @@
     // general info
 2000; J (number of spatial samples)
 50000; N (number of time samples)
-5E-8; tMax (maximum time for thermal model, sim will run from 0 to tMax)
-100; timeskip (factor to reduce timesteps that are used in the calculation, but not shown in the result)
+5E-9; tMax (maximum time for thermal model, sim will run from 0 to tMax)
+20; timeskip (factor to reduce timesteps that are used in the calculation, but not shown in the result)
 5; ETratio (ratio between time calculated for the electrical model and thermal model)
     // physical dimensions detector wire
 1.5E-6; wireLength (length of the nanowire (divided into J segments))
@@ -23,7 +23,7 @@
 0; R_s_std (series resistor)
 100E-9; C_m_std (dc port bias tee)
 16.5E-6; I_b_std (bias current)
-15E-9; initHS_l_std (initial hotspot length (to simulate a photon hit))
+3E-9; initHS_l_std (initial hotspot length (to simulate a photon hit))
 8; initHS_T_std (initial hotspot temperature)
 2.4E-6; rho_norm_std (conductivity of the nanowire in normal state)
 808E-9; L_w_std (kinetic inductance of the nanowire)

@@ -62,7 +62,7 @@ x = np.linspace(-(J//2 - 1)*dX, J//2*dX, J)
 plt.contourf(t*dt*1e9, x*1e6, T.transpose() + 1e-12, 50, cmap="hot")
 plt.xlabel("t (ns)")
 plt.ylabel("x ($\mu$m)")
-plt.colorbar()
+plt.colorbar(label="T (K)")
 plt.show(block=False)
 
 plt.figure()

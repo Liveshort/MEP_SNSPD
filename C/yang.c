@@ -57,17 +57,12 @@ int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, dou
     b[0] = V_c_n + 2*R_L*I_b + (X - R_L - R_w_n - R_s)*I_n;
     b[1] = V_c_n + Y*(2*I_b - I_n);
 
-    //print_matrix_rowmajor( "Entry Matrix A", n, n, A, n );
-    //print_matrix_rowmajor( "Right Rand Side b", n, nrhs, b, nrhs );
-
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
 
     if (info != 0) {
         puts("Error encountered in matrix calculation of electrical model...\nExiting with code 3.");
         return 3;
     }
-
-    //print_matrix_rowmajor( "Solution", n, nrhs, b, nrhs );
 
     *I_np1 = b[0];
     *V_c_np1 = b[1];

@@ -8,7 +8,7 @@ const double Lorentz;       // Lorentz number
 // structure that contains the result of the simulation of an snspd
 typedef struct _simres {
     int runType;            // runtype of the simulation (0: yang, 1: yang_parallel)
-    size_t J;               // number of spatial samples
+    size_t * J;               // number of spatial samples
     size_t N;               // number of time samples
     double * dX;            // delta X
     double dt;              // delta t
@@ -31,7 +31,8 @@ typedef struct _simdata {
     int runType;            // runtype of the simulation (0: yang, 1: yang parallel)
     int allowOpt;           // if 1, optimizes thermal when wire has cooled to within T_sub_eps
     // general info
-    size_t J;               // number of spatial samples
+    size_t J0;              // number of spatial samples of snspd 0
+    size_t J1;              // number of spatial samples of snspd 1
     size_t N;               // number of time samples
     double tMax;            // maximum time, sim will run from 0 to tMax
     size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
@@ -41,7 +42,7 @@ typedef struct _simdata {
     size_t numberOfR;       // number of resistances that need to be measured
     size_t numberOfC;       // number of capacitors that need to be measured
     // physical dimensions detector wire
-    double wireLength;      // length of the nanowire (divided into J segments)
+    double wireLength;      // length of the nanowire (divided into J0 segments)
     double wireThickness;   // thickness of the nanowire
     double wireWidth;       // width of the nanowire
     // experiment specific data
@@ -65,6 +66,28 @@ typedef struct _simdata {
     // data specific to the standard model with parallel filter (runtype 1)
     double L_p_parallel;    // kinetic inductance of the parallel inductor
     double R_p_parallel;    // resistance of the parallel resistor
+    // physical dimensions waterfall stage wire(s)
+    double wireLength_1;    // length of the nanowire (divided into J1 segments)
+    double wireThickness_1; // thickness of the nanowire
+    double wireWidth_1;     // width of the nanowire
+    // data specific to the waterfall model (runtype 2)
+    double R_L_wtf;         // load resistor
+    double R_s0_wtf;        // series resistor detector wire
+    double R_s1_wtf;        // series resistor stage 1 wire
+    double R_small_wtf;     // small resistor to direct current
+    double R_01_wtf;        // resistor between stage 0 and 1
+    double C_01_wtf;        // capacitor between stage 0 and 1
+    double C_m_wtf;         // dc port bias tee
+    double I_b0_wtf;        // bias current
+    double I_b1_wtf;        // bias current
+    double initHS_l_wtf;    // initial hotspot length (to simulate a photon hit)
+    double initHS_T_wtf;    // initial hotspot temperature
+    double rho_norm_wtf;    // conductivity of the nanowire in normal state
+    double L_w0_wtf;        // kinetic inductance of the nanowire
+    double L_w1_wtf;        // kinetic inductance of the nanowire
+    double T_ref_wtf;       // reference temperature for model parameters [Yang]
+    double I_c0_wtf;        // critical current at 0K detector wire
+    double I_c1_wtf;        // critical current at 0K stage 1 wire
 } SimData;
 
 void free_simres(SimRes * simRes);
