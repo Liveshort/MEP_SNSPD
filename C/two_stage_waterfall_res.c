@@ -168,8 +168,8 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
     double * R_seg1_n = calloc(J1, sizeof(double));
 
     // set up two characteristic numbers for the electrical calculations
-    double X = (2*data->L_w0_wtf)/dt;
-    double Y = (2*data->L_w1_wtf)/dt;
+    double X = (2*data->L_w1_wtf)/dt;
+    double Y = (2*data->L_w0_wtf)/dt;
     double Q = dt/(2*data->C_m_wtf);
 
     // set a flag to check if done
