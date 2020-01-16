@@ -13,7 +13,7 @@ void free_simres(SimRes * res) {
         free(res->I[i]);
     for (unsigned r=0; r<res->numberOfR; ++r)
         free(res->R[r]);
-    for (unsigned v=0; v<res->numberOfR; ++v)
+    for (unsigned v=0; v<res->numberOfC; ++v)
         free(res->V_c[v]);
     for (unsigned t=0; t<res->numberOfT; ++t) {
         for (unsigned n=0; n<res->N/res->timeskip; ++n)
@@ -26,6 +26,7 @@ void free_simres(SimRes * res) {
     free(res->R);
     free(res->V_c);
     free(res->dX);
+    free(res->I_b);
     free(res);
 
     return;

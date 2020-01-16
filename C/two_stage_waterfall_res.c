@@ -62,7 +62,7 @@ int advance_time_electric_2_wtf_res(double * I0_np1, double * I1_np1, double * V
     A[8] = 1;
 
     b[0] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (X - R_w1_n - R_L - R_small)*I1_n - (R_L + R_small)*I0_n;
-    b[1] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (Y - R_w1_n - R_L - R_small - R_01)*I0_n - (R_L + R_small)*I1_n + 2*I_b0*R_01;
+    b[1] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (Y - R_w0_n - R_L - R_small - R_01)*I0_n - (R_L + R_small)*I1_n + 2*I_b0*R_01;
     b[2] = V_c_n + Q*(2*(I_b0 + I_b1) - I0_n - I1_n);
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
@@ -182,9 +182,9 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
 
         // advance the thermal model to the next time step after the initial step
         if (n > data->timeskip+1 && n < N) {
-            if (cmp_vector(T0_prev, J0, data->T_sub, data->T_sub_eps) || cmp_vector(T0_prev, J0, data->T_sub, data->T_sub_eps) || !data->allowOpt) {
+            if (!data->allowOpt || cmp_vector(T0_prev, J0, data->T_sub, data->T_sub_eps) || cmp_vector(T1_prev, J1, data->T_sub, data->T_sub_eps)) {
                 advance_time_thermal(T0_prev, T0_curr, J0, data->T_sub, alpha0_n, c0_n, rho_seg0_n, kappa0_n, data->wireThickness, currentDensity_w0, dt, dX0);
-                advance_time_thermal(T1_prev, T1_curr, J1, data->T_sub, alpha1_n, c1_n, rho_seg1_n, kappa1_n, data->wireThickness, currentDensity_w1, dt, dX1);
+                advance_time_thermal(T1_prev, T1_curr, J1, data->T_sub, alpha1_n, c1_n, rho_seg1_n, kappa1_n, data->wireThickness_1, currentDensity_w1, dt, dX1);
             } else {
                 fill_vector(T0_curr, J0, data->T_sub);
                 fill_vector(T1_curr, J1, data->T_sub);
@@ -205,16 +205,20 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
             R1[n] = 0;
         }
 
+        //puts("Tnp1 and Tn");
+        //print_vector(T1_prev, J1);
+        //print_vector(T1_prev, J1);
+
         // update the current density through the nanowire
         currentDensity_w0 = I0[n-1]/(data->wireWidth*data->wireThickness);
-        currentDensity_w1 = I1[n-1]/(data->wireWidth*data->wireThickness);
+        currentDensity_w1 = I1[n-1]/(data->wireWidth_1*data->wireThickness_1);
         // update the electric values
         advance_time_electric_2_wtf_res(&I0[n], &I1[n], &V_c[n], I0[n-1], I1[n-1], V_c[n-1], X, Y, Q, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, data->I_b0_wtf, data->I_b1_wtf);
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;
         T1_prev = T1_curr;
-        if (n % data->timeskip == 0) {
+        if (n % data->timeskip == 0 && n < N) {
             T0_curr = T0[n/data->timeskip];
             T1_curr = T1[n/data->timeskip];
         } else {

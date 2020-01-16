@@ -66,6 +66,14 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     for (unsigned v=0; v<data->numberOfC; ++v)
         res->V_c[v] = calloc(NE, sizeof(double));
 
+    // forward bias currents
+    res->I_b = calloc(res->numberOfT, sizeof(double));
+    if (runType == 0 || runType == 1) res->I_b[0] = data->I_b_std;
+    if (runType == 2 || runType == 3) {
+        res->I_b[0] = data->I_b0_wtf;
+        res->I_b[1] = data->I_b1_wtf;
+    }
+
     // calculate delta x and delta t
     res->dX = calloc(res->numberOfT, sizeof(double));
     res->dX[0] = data->wireLength / (J0 - 1);

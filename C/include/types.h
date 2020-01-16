@@ -12,6 +12,7 @@ typedef struct _simres {
     size_t N;               // number of time samples
     double * dX;            // delta X
     double dt;              // delta t
+    double * I_b;           // bias currents
     size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
     size_t ETratio;         // ratio between time calculated for electrical model and thermal model
     size_t numberOfT;       // number of temperature vectors that need to be measured

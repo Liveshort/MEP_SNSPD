@@ -201,7 +201,12 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     fprintf(fp, "%50s; %zu\n", "# of currents", res->numberOfI);
     fprintf(fp, "%50s; %zu\n", "# of resistances", res->numberOfR);
     fprintf(fp, "%50s; %zu\n", "# of capacitor voltages", res->numberOfC);
-    fprintf(fp, "%50s; ", "dX [m]");
+    fprintf(fp, "%50s; ", "I_b [A]");
+    for (unsigned i=0; i<res->numberOfT; ++i) {
+        if (i > 0) fprintf(fp, "; ");
+        fprintf(fp, "%8.6e", res->I_b[i]);
+    }
+    fprintf(fp, "\n%50s; ", "dX [m]");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");
         fprintf(fp, "%8.6e", res->dX[i]);
