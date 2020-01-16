@@ -205,7 +205,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     free(R_seg_n);
 
     // print result
-    puts("\nDone.");
+    puts("\nSimulation completed.");
     res->exitValue = 0;
     return 0;
 }

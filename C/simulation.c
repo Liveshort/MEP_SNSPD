@@ -245,7 +245,9 @@ int main(int argc, char * argv[]) {
     // run simulation
     SimRes * res = run_snspd_simulation(data, data->runType);
 
+    puts("Writing files...");
     write_results(argv[2], fp, res);
+    puts("Done.");
 
     free_simres(res);
     free_simdata(data);

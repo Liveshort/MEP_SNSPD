@@ -253,7 +253,7 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
     free(R_seg1_n);
 
     // print result
-    puts("\nDone.");
+    puts("\nSimulation completed.");
     res->exitValue = 0;
     return 0;
 }
