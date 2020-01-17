@@ -1,6 +1,17 @@
 # SNSPD (Superconducting Nanowire Single-Photon Detector) Simulation Code
 ## Running the simulation (Linux)
-* First clone the repository to a place of your liking.
+* First clone the repository to a place of your liking:
+```bash
+git clone git@github.com:Liveshort/MEP_SNSPD.git
+```
+* Install some required packages (if I missed one, you'll get a `package not found` error somewhere down the line, just install that package analogous to the ones here):
+```bash
+sudo apt install build-essential gfortran python3-dev python3-pip
+```
+* Install required Python3 packages:
+```bash
+pip3 install numpy matplotlib
+```
 * Download the current LAPACK version (version 3.9.0 was used at the time of writing) from http://www.netlib.org/lapack/.
 * Unpack the LAPACK repository by opening a terminal, going to the downloads folder and running the following commands:
 ```bash

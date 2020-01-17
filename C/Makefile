@@ -18,7 +18,7 @@ LPKELB = $(LIBDIR)/liblapacke.a
 LIBS   = -lm $(LPKELB) $(LPKLB) $(BLSLB)
 
 $(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -g -I $(DEPDIR) -I $(DEPDIR2) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)
+	$(CC) -I $(DEPDIR) -I $(DEPDIR2) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)
 
 all: simulation
 

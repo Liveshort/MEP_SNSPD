@@ -33,6 +33,11 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfI = 2;
         data->numberOfR = 2;
         data->numberOfC = 1;
+    } else if (data->runType == 3) {
+        data->numberOfT = 2;
+        data->numberOfI = 2;
+        data->numberOfR = 2;
+        data->numberOfC = 2;
     }
 
     // scan data runtype 0 and 1
@@ -82,7 +87,7 @@ int collect_data(FILE * fp, SimData * data) {
     }
 
     // scan data runtype 2 and 3
-    if (data->runType == 2) {
+    if (data->runType == 2 || data->runType == 3) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
