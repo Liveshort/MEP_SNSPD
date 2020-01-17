@@ -37,7 +37,7 @@ make all && time make run args="../sim_setup/setup_yang.info ../sim_results/"
 * If all went well, everything will compile and a progress bar will appear. It should be done in a few seconds for a simple simulation. The first argument is the input for the simulation, found in the sim_setup folder, and the second argument is the output folder, in this case the sim_results/ folder. Some `[***].bin` files will have appeared here, along with an info file containing information about the simulation in plain text (which you can read as well).
 * To look at the results of your simulation in nice figures, open the `Python/plot_test.py` file in your favorite editor/IDE and run the code there or with the following command:
 ```bash
-python3 plot_test.py
+python3 plot_[***].py
 ```
 * To run other simulations provided by this simulation software, provide different setup files with the `args` argument in the `make run` command.
 ## Running the simulation (Windows)
