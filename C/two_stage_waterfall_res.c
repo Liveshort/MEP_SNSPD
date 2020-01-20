@@ -123,13 +123,25 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
         T0_curr[j] = data->initHS_T_wtf;
     }
 
+    // calculate the correct bias current
+    double v_I0, v_I1;
+    if (fabs(data->I_b0_wtf) < 1e-12 && fabs(data->I_b1_wtf) < 1e-12) {
+        v_I0 = data->I_t0_wtf;
+        v_I1 = data->I_t1_wtf;
+    } else {
+        v_I0 = data->I_b0_wtf;
+        v_I1 = data->I_b1_wtf;
+    }
     for (unsigned n=0; n<=data->timeskip; ++n) {
         // set up initial current through the snspd in steady state (t = 0)
-        I0[n] = data->I_b0_wtf;
-        I1[n] = data->I_b1_wtf;
+        I0[n] = v_I0;
+        I1[n] = v_I1;
         // set up initial voltage drop over the capacitor
         V_c[n] = 0;
     }
+    // put the right currents in the results
+    res->I_b[0] = v_I0;
+    res->I_b[1] = v_I1;
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -213,7 +225,7 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
         currentDensity_w0 = I0[n-1]/(data->wireWidth*data->wireThickness);
         currentDensity_w1 = I1[n-1]/(data->wireWidth_1*data->wireThickness_1);
         // update the electric values
-        advance_time_electric_2_wtf_res(&I0[n], &I1[n], &V_c[n], I0[n-1], I1[n-1], V_c[n-1], X, Y, Q, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, data->I_b0_wtf, data->I_b1_wtf);
+        advance_time_electric_2_wtf_res(&I0[n], &I1[n], &V_c[n], I0[n-1], I1[n-1], V_c[n-1], X, Y, Q, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, v_I0, v_I1);
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;

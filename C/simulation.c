@@ -72,6 +72,7 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_s_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_m_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b_std, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_t_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_l_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_T_std, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->rho_norm_std, dump) < 1) exit(6);
@@ -129,6 +130,8 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_m_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b0_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b1_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_t0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_t1_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_l_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->initHS_T_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->rho_norm_wtf, dump) < 1) exit(6);

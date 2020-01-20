@@ -44,6 +44,6 @@ python3 plot_[***].py
 * Running the simulations under Windows is slightly more complicated than under Linux, but is the same for the most part. It does require the Windows Subsystem for Linux (WSL).
 * Install the Windows Subsystem for Linux (https://docs.microsoft.com/en-us/windows/wsl/install-win10), choose any distribution you like, but know that the code was tested under Ubuntu-like distributions, so 16.04 or the newer 18.04 are the safest choices.
 * Open a Windows Command Prompt and enter `bash`. This will open a terminal in WSL.
-* Now follow the steps of the Linux preparations above, except the Python code part. Note that the `ulimit` command might fail, which caused the LAPACK test suite to fail on my machine. The libraries however, compiled just fine, so I could just copy them over to their designated folder. This will probably also be the case for you.
+* Now follow the steps of the Linux preparations above, except the Python code part. Note that the `ulimit` command might fail, which caused the LAPACK test suite to fail on my machine. The libraries, however, compiled just fine, so I could just copy them over to their designated folder. This will probably also be the case for you.
 * You can run Python natively on your Windows machine. Open the Python folder in the copy of this repo on your pc in PyCharm, Spyder or another Python interpreter of your liking.
 * Hit `run`, or the equivalent in your software.

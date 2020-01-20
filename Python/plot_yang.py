@@ -16,6 +16,7 @@ with open("../sim_results/param.info") as file:
     numberOfI = int(paramList.pop(0))
     numberOfR = int(paramList.pop(0))
     numberOfC = int(paramList.pop(0))
+    I_b = float(paramList.pop(0))
     dX = float(paramList.pop(0))
     dt = float(paramList.pop(0))
 
@@ -67,16 +68,12 @@ plt.show(block=False)
 
 plt.figure()
 plt.plot(tE*dt*1e9, I1*1e6)
-plt.xlabel("t (ns)")
-plt.ylabel("I1 ($\mu$A)")
-plt.show(block=False)
-
 if runtype == 1:
-    plt.figure()
     plt.plot(tE*dt*1e9, I2*1e6)
-    plt.xlabel("t (ns)")
-    plt.ylabel("I2 ($\mu$A)")
-    plt.show(block=False)
+plt.xlabel("t (ns)")
+plt.ylabel("I ($\mu$A)")
+plt.legend(["I1 (detector)", "I2 (detector par)"])
+plt.show(block=False)
 
 plt.figure()
 plt.plot(tE*dt*1e9, R/1000)

@@ -59,6 +59,7 @@ typedef struct _simdata {
     double R_s_std;         // series resistor
     double C_m_std;         // dc port bias tee
     double I_b_std;         // bias current
+    double I_t_std;         // target bias current (make sure I_b_std == 0 to use this)
     double initHS_l_std;    // initial hotspot length (to simulate a photon hit)
     double initHS_T_std;    // initial hotspot temperature
     double rho_norm_std;    // conductivity of the nanowire in normal state
@@ -81,6 +82,8 @@ typedef struct _simdata {
     double C_m_wtf;         // dc port bias tee
     double I_b0_wtf;        // bias current
     double I_b1_wtf;        // bias current
+    double I_t0_wtf;        // target current
+    double I_t1_wtf;        // target current
     double initHS_l_wtf;    // initial hotspot length (to simulate a photon hit)
     double initHS_T_wtf;    // initial hotspot temperature
     double rho_norm_wtf;    // conductivity of the nanowire in normal state

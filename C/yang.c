@@ -115,12 +115,20 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
         T_curr[j] = data->initHS_T_std;
     }
 
+    // calculate the correct bias current
+    double v_I;
+    if (fabs(data->I_b_std) < 1e-12)
+        v_I = data->I_t_std;
+    else
+        v_I = data->I_b_std;
     for (unsigned n=0; n<=data->timeskip; ++n) {
         // set up initial current through the snspd in steady state (t = 0)
-        I[n] = data->I_b_std;
+        I[n] = v_I;
         // set up initial voltage drop over the capacitor
-        V_c[n] = data->R_s_std*data->I_b_std;
+        V_c[n] = data->R_s_std*v_I;
     }
+    // put right value in the results
+    res->I_b[0] = v_I;
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -181,7 +189,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
         // update the current density through the nanowire
         currentDensity_w = I[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
-        advance_time_electric_yang(&I[n], &V_c[n], I[n-1], V_c[n-1], X, Y, R[n-1], R[n], data->R_L_std, data->R_s_std, data->I_b_std);
+        advance_time_electric_yang(&I[n], &V_c[n], I[n-1], V_c[n-1], X, Y, R[n-1], R[n], data->R_L_std, data->R_s_std, v_I);
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T_prev = T_curr;

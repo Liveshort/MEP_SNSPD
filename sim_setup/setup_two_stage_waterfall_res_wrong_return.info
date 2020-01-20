@@ -32,6 +32,8 @@
 100E-9; C_m_wtf (dc port bias tee)
 16.5E-6; I_b0_wtf (bias current detector)
 35E-6; I_b1_wtf (bias current stage 1)
+0; I_t0_wtf (target current detector)
+0; I_t1_wtf (target current stage 1)
 3E-9; initHS_l_wtf (initial hotspot length (to simulate a photon hit))
 8; initHS_T_wtf (initial hotspot temperature)
 2.4E-6; rho_norm_wtf (conductivity of the nanowire in normal state)
