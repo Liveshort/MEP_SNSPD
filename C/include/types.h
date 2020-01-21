@@ -72,7 +72,7 @@ typedef struct _simdata {
     double wireLength_1;    // length of the nanowire (divided into J1 segments)
     double wireThickness_1; // thickness of the nanowire
     double wireWidth_1;     // width of the nanowire
-    // data specific to the waterfall model (runtype 2)
+    // data specific to the waterfall model (runtype 2/3)
     double R_L_wtf;         // load resistor
     double R_s0_wtf;        // series resistor detector wire
     double R_s1_wtf;        // series resistor stage 1 wire
@@ -92,6 +92,11 @@ typedef struct _simdata {
     double T_ref_wtf;       // reference temperature for model parameters [Yang]
     double I_c0_wtf;        // critical current at 0K detector wire
     double I_c1_wtf;        // critical current at 0K stage 1 wire
+    // data specific to the waterfall model with parallel circuits (runtype 4/5)
+    double R_p0_wtf;        // parallel resistance detector wire
+    double R_p1_wtf;        // parallel resistance stage 1 wire
+    double L_p0_wtf;        // parallel inductance detector wire
+    double L_p1_wtf;        // parallel inductance stage 1 wire
 } SimData;
 
 void free_simres(SimRes * simRes);

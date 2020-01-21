@@ -40,7 +40,9 @@ int update_thermal_values_2_wtf_res(double * alpha_n, double * kappa_n, double *
     return 0;
 }
 
-int advance_time_electric_2_wtf_res(double * I0_np1, double * I1_np1, double * V_c_np1, double I0_n, double I1_n, double V_c_n, double X, double Y, double Q, double R_w0_n, double R_w0_np1, double R_w1_n, double R_w1_np1, double R_L, double R_01, double R_small, double I_b0, double I_b1) {
+// advances the electric model one timestep using BLAS matrix algebra.
+// you need the LAPACK for this, or work out the matrix logic on your own (not recommended)
+int advance_time_electric_2_wtf_res(double * I0_np1, double * I1_np1, double * V_c_np1, double I0_n, double I1_n, double V_c_n, double X, double Y, double Q, double R_w0_n, double R_w0_np1, double R_w1_n, double R_w1_np1, double R_L, double R_01, double R_small, double R_s0, double R_s1, double I_b0, double I_b1) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
     n = 3; nrhs = 1;
@@ -49,20 +51,20 @@ int advance_time_electric_2_wtf_res(double * I0_np1, double * I1_np1, double * V
     double * b = calloc(n*nrhs, sizeof(double));
     lapack_int * ipiv = calloc(n, sizeof(lapack_int));
 
-    A[0] = X + R_L + R_w1_np1 + R_small;
+    A[0] = X + R_L + R_w1_np1 + R_s1 + R_small;
     A[1] = R_L + R_small;
     A[2] = -1;
 
     A[3] = R_L + R_small;
-    A[4] = Y + R_L + R_w0_np1 + R_small + R_01;
+    A[4] = Y + R_L + R_w0_np1 + R_s0 + R_small + R_01;
     A[5] = -1;
 
     A[6] = Q;
     A[7] = Q;
     A[8] = 1;
 
-    b[0] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (X - R_w1_n - R_L - R_small)*I1_n - (R_L + R_small)*I0_n;
-    b[1] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (Y - R_w0_n - R_L - R_small - R_01)*I0_n - (R_L + R_small)*I1_n + 2*I_b0*R_01;
+    b[0] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (X - R_w1_n - R_s1 - R_L - R_small)*I1_n - (R_L + R_small)*I0_n;
+    b[1] = V_c_n + 2*(R_L + R_small)*(I_b0 + I_b1) + (Y - R_w0_n - R_s0 - R_L - R_small - R_01)*I0_n - (R_L + R_small)*I1_n + 2*I_b0*R_01;
     b[2] = V_c_n + Q*(2*(I_b0 + I_b1) - I0_n - I1_n);
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
@@ -75,6 +77,43 @@ int advance_time_electric_2_wtf_res(double * I0_np1, double * I1_np1, double * V
     *I1_np1 = b[0];
     *I0_np1 = b[1];
     *V_c_np1 = b[2];
+
+    free(A);
+    free(b);
+    free(ipiv);
+
+    return 0;
+}
+
+// calculates the bias currents for certain target currents
+int calculate_bias_from_target_currents_wtf_res(double * v_I_b0, double * v_I_b1, double I_t0, double I_t1, double R_s0, double R_s1, double R_01) {
+    // set up matrix and vector for Ax = b calculation
+    lapack_int n, nrhs, info;
+    n = 2; nrhs = 1;
+
+    double * A = calloc(n*n, sizeof(double));
+    double * b = calloc(n*nrhs, sizeof(double));
+    lapack_int * ipiv = calloc(n, sizeof(lapack_int));
+
+    double R_tot = R_01 + R_s0 + R_s1;
+
+    A[0] = (R_01 + R_s1)/R_tot;
+    A[1] = R_s1/R_tot;
+    A[2] = R_s0/R_tot;
+    A[3] = (R_01 + R_s0)/R_tot;
+
+    b[0] = I_t0;
+    b[1] = I_t1;
+
+    info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
+
+    if (info != 0) {
+        puts("Error encountered in matrix calculation of bias currents...\nExiting with code 4.");
+        return 4;
+    }
+
+    *v_I_b0 = b[0];
+    *v_I_b1 = b[1];
 
     free(A);
     free(b);
@@ -124,24 +163,27 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
     }
 
     // calculate the correct bias current
-    double v_I0, v_I1;
+    double v_I_b0, v_I_b1;
     if (fabs(data->I_b0_wtf) < 1e-12 && fabs(data->I_b1_wtf) < 1e-12) {
-        v_I0 = data->I_t0_wtf;
-        v_I1 = data->I_t1_wtf;
+        calculate_bias_from_target_currents_wtf_res(&v_I_b0, &v_I_b1, data->I_t0_wtf, data->I_t1_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_01_wtf);
     } else {
-        v_I0 = data->I_b0_wtf;
-        v_I1 = data->I_b1_wtf;
+        v_I_b0 = data->I_b0_wtf;
+        v_I_b1 = data->I_b1_wtf;
     }
+    // determine initial conditions
+    double R_tot = data->R_01_wtf + data->R_s0_wtf + data->R_s1_wtf;
+    double v_I_t0 = data->R_s1_wtf/R_tot*v_I_b1 + (data->R_01_wtf + data->R_s1_wtf)/R_tot*v_I_b0;
+    double v_I_t1 = data->R_s0_wtf/R_tot*v_I_b0 + (data->R_01_wtf + data->R_s0_wtf)/R_tot*v_I_b1;
     for (unsigned n=0; n<=data->timeskip; ++n) {
         // set up initial current through the snspd in steady state (t = 0)
-        I0[n] = v_I0;
-        I1[n] = v_I1;
+        I0[n] = v_I_t0;
+        I1[n] = v_I_t1;
         // set up initial voltage drop over the capacitor
-        V_c[n] = 0;
+        V_c[n] = v_I_t1*data->R_s1_wtf;
     }
     // put the right currents in the results
-    res->I_b[0] = v_I0;
-    res->I_b[1] = v_I1;
+    res->I_b[0] = v_I_b0;
+    res->I_b[1] = v_I_b1;
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -217,15 +259,11 @@ int run_two_stage_waterfall_res(SimRes * res, SimData * data, double dX0, double
             R1[n] = 0;
         }
 
-        //puts("Tnp1 and Tn");
-        //print_vector(T1_prev, J1);
-        //print_vector(T1_prev, J1);
-
         // update the current density through the nanowire
         currentDensity_w0 = I0[n-1]/(data->wireWidth*data->wireThickness);
         currentDensity_w1 = I1[n-1]/(data->wireWidth_1*data->wireThickness_1);
         // update the electric values
-        advance_time_electric_2_wtf_res(&I0[n], &I1[n], &V_c[n], I0[n-1], I1[n-1], V_c[n-1], X, Y, Q, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, v_I0, v_I1);
+        advance_time_electric_2_wtf_res(&I0[n], &I1[n], &V_c[n], I0[n-1], I1[n-1], V_c[n-1], X, Y, Q, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, v_I_b0, v_I_b1);
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;

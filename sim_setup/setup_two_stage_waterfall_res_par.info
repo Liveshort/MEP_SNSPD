@@ -1,4 +1,4 @@
-2; runtype (0: yang, 1: yang parallel, 2: two stage waterfall resistor)
+4; runtype (0: yang, 1: yang parallel, 2: two stage waterfall resistor)
 0; allow optimization (checks if the wire has cooled to within T_sub_eps, then stops calculation of thermal model)
     // general info
 2000; J0 (number of spatial samples)
@@ -42,3 +42,8 @@
 10; T_ref_wtf (reference temperature for model parameters [Yang])
 20E-6; I_c0_wtf (critical current at 0K)
 40E-6; I_c1_wtf (critical current at 0K)
+    // data specific to the waterfall model with parallel circuits (runtype 4/5)
+10000; R_p0_wtf (parallel resistance detector wire)
+10000; R_p1_wtf (parallel resistance stage 1 wire)
+100E-9; L_p0_wtf (parallel inductance detector wire)
+100E-9; L_p1_wtf (parallel inductance stage 1 wire)

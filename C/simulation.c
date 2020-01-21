@@ -43,7 +43,9 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 0 and 1
     if (data->runType == 0 || data->runType == 1) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
+
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
@@ -90,7 +92,9 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 2 and 3
     if (data->runType == 2 || data->runType == 3) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
+
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J1, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
@@ -140,6 +144,15 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->T_ref_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_c0_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_c1_wtf, dump) < 1) exit(6);
+    }
+
+    if (data->runType == 4 || data->runType == 5) {
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_p0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_p1_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p0_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p1_wtf, dump) < 1) exit(6);
     }
 
     fclose(fp);
