@@ -38,6 +38,16 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfI = 2;
         data->numberOfR = 2;
         data->numberOfC = 2;
+    } else if (data->runType == 4) {
+        data->numberOfT = 2;
+        data->numberOfI = 4;
+        data->numberOfR = 2;
+        data->numberOfC = 1;
+    } else if (data->runType == 5) {
+        data->numberOfT = 2;
+        data->numberOfI = 4;
+        data->numberOfR = 2;
+        data->numberOfC = 2;
     }
 
     // scan data runtype 0 and 1
@@ -89,8 +99,8 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_p_parallel, dump) < 1) exit(6);
     }
 
-    // scan data runtype 2 and 3
-    if (data->runType == 2 || data->runType == 3) {
+    // scan data runtype 2-5
+    if (data->runType >= 2 && data->runType <= 5) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);

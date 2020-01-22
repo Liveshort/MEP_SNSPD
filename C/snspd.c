@@ -9,6 +9,7 @@
 #include "yang.h"
 #include "yang_parallel.h"
 #include "two_stage_waterfall_res.h"
+#include "two_stage_waterfall_res_par.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
@@ -24,6 +25,9 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     size_t J0, J1;
     // first locally save some important parameters that we will need all the time
     J0 = data->J0;
+    // put J1 to zero to suppress "maybe uninitialized" warning from the gcc compiler
+    J1 = 0;
+    // ...and overwrite if we actually want to use it
     if (data->numberOfT > 1) J1 = data->J1;
     size_t N = data->N;
     size_t NT = data->N/data->timeskip;
@@ -66,13 +70,8 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     for (unsigned v=0; v<data->numberOfC; ++v)
         res->V_c[v] = calloc(NE, sizeof(double));
 
-    // forward bias currents
+    // allocate bias currents
     res->I_b = calloc(res->numberOfT, sizeof(double));
-    if (runType == 0 || runType == 1) res->I_b[0] = data->I_b_std;
-    if (runType == 2 || runType == 3) {
-        res->I_b[0] = data->I_b0_wtf;
-        res->I_b[1] = data->I_b1_wtf;
-    }
 
     // calculate delta x and delta t
     res->dX = calloc(res->numberOfT, sizeof(double));
@@ -90,10 +89,13 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
         case 2:
             run_two_stage_waterfall_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
             break;
+        case 4:
+            run_two_stage_waterfall_res_par(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
+            break;
         default:
-            printf("Unknown runtype %d...\nReturning empty result with error 1 (wrong runtype)...", runType);
+            printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
             res->exitValue = 1;
-            return res;
+            exit(1);
     }
 
     res->exitValue = 0;

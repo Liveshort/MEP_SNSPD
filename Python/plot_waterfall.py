@@ -29,6 +29,8 @@ T0 = []
 T1 = []
 I0 = []
 I1 = []
+I2 = []
+I3 = []
 R0 = []
 R1 = []
 V_c = []
@@ -47,9 +49,17 @@ with open("../sim_results/I.bin", "rb") as file:
         I0.append(item)
     for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
         I1.append(item)
+    if runtype == 4 or runtype == 5:
+        for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
+            I2.append(item)
+        for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
+            I3.append(item)
+
 
 I0 = np.array(I0)
 I1 = np.array(I1)
+I2 = np.array(I2)
+I3 = np.array(I3)
 
 with open("../sim_results/R.bin", "rb") as file:
     for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
@@ -92,10 +102,18 @@ plt.show(block=False)
 plt.figure()
 plt.plot(tE*dt*1e9, I0*1e6)
 plt.plot(tE*dt*1e9, I1*1e6)
-plt.plot(tE*dt*1e9, (I_b0 + I_b1 - I0 - I1)*1e6)
+if runtype == 2 or runtype == 3:
+    plt.plot(tE*dt*1e9, (I_b0 + I_b1 - I0 - I1)*1e6)
+if runtype == 4 or runtype == 5:
+    plt.plot(tE*dt*1e9, I2*1e6)
+    plt.plot(tE*dt*1e9, I3*1e6)
+    plt.plot(tE*dt*1e9, (I_b0 + I_b1 - I0 - I1 - I2 - I3)*1e6)
 plt.xlabel("t (ns)")
 plt.ylabel("I ($\mu$A)")
-plt.legend(["I0 (detector wire)", "I1 (stage one waterfall)", "I_load (load current)"], loc="upper right")
+if runtype == 4 or runtype == 5:
+    plt.legend(["I0 (detector wire)", "I1 (detector par)", "I2 (stage one wtf wire)", "I3 (stage one wtf par)", "I_load (load current)"], loc="upper right")
+else:
+    plt.legend(["I0 (detector wire)", "I1 (stage one waterfall)", "I_load (load current)"], loc="upper right")
 plt.show(block=False)
 
 plt.figure()
