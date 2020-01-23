@@ -39,6 +39,7 @@ C/bld/*
 !C/bld/.gitkeep
 sim_results/*
 !sim_results/.gitkeep
+nosync/*
 
 # Debug files
 *.dSYM/
