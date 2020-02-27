@@ -163,6 +163,7 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_p1_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p0_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p1_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_m_wtf, dump) < 1) exit(6);
     }
 
     fclose(fp);

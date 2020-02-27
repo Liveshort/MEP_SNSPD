@@ -111,7 +111,7 @@ if runtype == 4 or runtype == 5:
 plt.xlabel("t (ns)")
 plt.ylabel("I ($\mu$A)")
 if runtype == 4 or runtype == 5:
-    plt.legend(["I0 (detector wire)", "I1 (detector par)", "I2 (stage one wtf wire)", "I3 (stage one wtf par)", "I_load (load current)"], loc="upper right")
+    plt.legend(["I0 (detector wire)", "I1 (detector par)", "I2 (stage one wat wire)", "I3 (stage one wat par)", "I_load (load current)"], loc="upper right")
 else:
     plt.legend(["I0 (detector wire)", "I1 (stage one waterfall)", "I_load (load current)"], loc="upper right")
 plt.show(block=False)

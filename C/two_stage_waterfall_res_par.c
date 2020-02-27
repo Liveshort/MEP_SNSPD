@@ -42,10 +42,12 @@ int update_thermal_values_2_wtf_res_par(double * alpha_n, double * kappa_n, doub
 
 // advances the electric model one timestep using BLAS matrix algebra.
 // you need the LAPACK for this, or work out the matrix logic on your own (not recommended)
-int advance_time_electric_2_wtf_res_par(double * I0_np1, double * I1_np1, double * I2_np1, double * I3_np1, double * V_c_np1, double I0_n, double I1_n, double I2_n, double I3_n, double V_c_n, double XW0, double XP0, double XW1, double XP1, double Y, double R_w0_n, double R_w0_np1, double R_w1_n, double R_w1_np1, double R_L, double R_01, double R_small, double R_s0, double R_s1, double R_p0, double R_p1, double I_b0, double I_b1) {
+int advance_time_electric_2_wtf_res_par(double * I0_np1, double * I1_np1, double * I2_np1, double * I3_np1, double * V_c_np1, double I0_n, double I1_n, double I2_n, double I3_n, double V_c_n, double XW0, double XP0, double XW1, double XP1, double XM, double Y, double R_w0_n, double R_w0_np1, double R_w1_n, double R_w1_np1, double R_L, double R_01, double R_small, double R_s0, double R_s1, double R_p0, double R_p1, double I_b0, double I_b1) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
     n = 5; nrhs = 1;
+
+    double Q = R_small + R_L + XM;
 
     double I_alp = I0_n + I1_n;
     double I_bet = I0_n + I1_n + I2_n + I3_n;
@@ -55,28 +57,28 @@ int advance_time_electric_2_wtf_res_par(double * I0_np1, double * I1_np1, double
     double * b = calloc(n*nrhs, sizeof(double));
     lapack_int * ipiv = calloc(n, sizeof(lapack_int));
 
-    A[0] = XW0 + R_small + R_L + R_01 + R_w0_np1 + R_s0;
-    A[1] = R_small + R_L + R_01;
-    A[2] = R_small + R_L;
-    A[3] = R_small + R_L;
+    A[0] = XW0 + Q + R_01 + R_w0_np1 + R_s0;
+    A[1] = Q + R_01;
+    A[2] = Q;
+    A[3] = Q;
     A[4] = -1;
 
-    A[5] = R_small + R_L + R_01;
-    A[6] = XP0 + R_small + R_L + R_01 + R_p0;
-    A[7] = R_small + R_L;
-    A[8] = R_small + R_L;
+    A[5] = Q + R_01;
+    A[6] = XP0 + Q + R_01 + R_p0;
+    A[7] = Q;
+    A[8] = Q;
     A[9] = -1;
 
-    A[10] = R_small + R_L;
-    A[11] = R_small + R_L;
-    A[12] = XW1 + R_small + R_L + R_w1_np1 + R_s1;
-    A[13] = R_small + R_L;
+    A[10] = Q;
+    A[11] = Q;
+    A[12] = XW1 + Q + R_w1_np1 + R_s1;
+    A[13] = Q;
     A[14] = -1;
 
-    A[15] = R_small + R_L;
-    A[16] = R_small + R_L;
-    A[17] = R_small + R_L;
-    A[18] = XP1 + R_small + R_L + R_p1;
+    A[15] = Q;
+    A[16] = Q;
+    A[17] = Q;
+    A[18] = XP1 + Q + R_p1;
     A[19] = -1;
 
     A[20] = Y;
@@ -85,10 +87,10 @@ int advance_time_electric_2_wtf_res_par(double * I0_np1, double * I1_np1, double
     A[23] = Y;
     A[24] = 1;
 
-    b[0] = V_c_n + 2*I_b0*R_01 + 2*I_b*(R_L + R_small) - I0_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_bet*(R_small + R_L);
-    b[1] = V_c_n + 2*I_b0*R_01 + 2*I_b*(R_L + R_small) - I1_n*(R_p0 - XP0) - I_alp*R_01 - I_bet*(R_small + R_L);
-    b[2] = V_c_n + 2*I_b*(R_L + R_small) - I2_n*(R_w1_n + R_s1 - XW1) - I_bet*(R_small + R_L);
-    b[3] = V_c_n + 2*I_b*(R_L + R_small) - I3_n*(R_p1 - XP1) - I_bet*(R_small + R_L);
+    b[0] = V_c_n + 2*I_b0*R_01 + 2*I_b*(R_L + R_small) - I0_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_bet*(R_small + R_L - XM);
+    b[1] = V_c_n + 2*I_b0*R_01 + 2*I_b*(R_L + R_small) - I1_n*(R_p0 - XP0) - I_alp*R_01 - I_bet*(R_small + R_L - XM);
+    b[2] = V_c_n + 2*I_b*(R_L + R_small) - I2_n*(R_w1_n + R_s1 - XW1) - I_bet*(R_small + R_L - XM);
+    b[3] = V_c_n + 2*I_b*(R_L + R_small) - I3_n*(R_p1 - XP1) - I_bet*(R_small + R_L - XM);
     b[4] = V_c_n + Y*(2*I_b - I_bet);
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
@@ -239,12 +241,12 @@ int run_two_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, do
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
     // formulae for these can be found in Yang
-    double Delta = 2.15*Kb*data->T_c*(1 - (data->T_ref_wtf/data->T_c)*(data->T_ref_wtf/data->T_c));
-    double A = data->c_e*exp(Delta/(data->T_ref_wtf*Kb));
+    double DeltaRef = 2.15*Kb*data->T_c*(1 - (data->T_ref_wtf/data->T_c)*(data->T_ref_wtf/data->T_c));
+    double A = data->c_e*exp(DeltaRef/(data->T_ref_wtf*Kb));
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_wtf, 3));
 
-    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", Delta, A, gamma, B);
+    printf("DeltaRef: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
 
     // determine surface ratio between the cross sections of the wires
     double surfaceRatio10 = data->wireThickness_1*data->wireWidth_1/data->wireThickness/data->wireWidth;
@@ -277,6 +279,7 @@ int run_two_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, do
     double XP0 = (2*data->L_p0_wtf)/dt;
     double XW1 = (2*data->L_w1_wtf)/dt;
     double XP1 = (2*data->L_p1_wtf)/dt;
+    double XM = (2*data->L_m_wtf)/dt;
     double Y = dt/(2*data->C_m_wtf);
 
     // set a flag to check if done
@@ -316,7 +319,7 @@ int run_two_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, do
         currentDensity_w0 = I0[n-1]/(data->wireWidth*data->wireThickness);
         currentDensity_w1 = I2[n-1]/(data->wireWidth_1*data->wireThickness_1);
         // update the electric values
-        advance_time_electric_2_wtf_res_par(&I0[n], &I1[n], &I2[n], &I3[n], &V_c[n], I0[n-1], I1[n-1], I2[n-1], I3[n-1], V_c[n-1], XW0, XP0, XW1, XP1, Y, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_p0_wtf, data->R_p1_wtf, v_I_b0, v_I_b1);
+        advance_time_electric_2_wtf_res_par(&I0[n], &I1[n], &I2[n], &I3[n], &V_c[n], I0[n-1], I1[n-1], I2[n-1], I3[n-1], V_c[n-1], XW0, XP0, XW1, XP1, XM, Y, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_p0_wtf, data->R_p1_wtf, v_I_b0, v_I_b1);
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;

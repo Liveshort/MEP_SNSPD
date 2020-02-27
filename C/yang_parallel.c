@@ -54,7 +54,7 @@ int advance_time_electric_yang_parallel(double * I0_np1, double * I1_np1, double
     A[2] = -1;
 
     A[3] = R_L;
-    A[4] = X2 + R_L;
+    A[4] = X2 + R_L + R_p;
     A[5] = -1;
 
     A[6] = Y;
@@ -62,7 +62,7 @@ int advance_time_electric_yang_parallel(double * I0_np1, double * I1_np1, double
     A[8] = 1;
 
     b[0] = V_c_n + 2*R_L*I_b + (X1 - R_L - R_w_n - R_s)*I0_n - R_L*I1_n;
-    b[1] = V_c_n + 2*R_L*I_b + (X2 - R_L - 2*R_p)*I1_n - R_L*I0_n;
+    b[1] = V_c_n + 2*R_L*I_b + (X2 - R_L - R_p)*I1_n - R_L*I0_n;
     b[2] = V_c_n + Y*(2*I_b - I0_n - I1_n);
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
@@ -140,12 +140,12 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
     // formulae for these can be found in Yang
-    double Delta = 2.15*Kb*data->T_c*(1 - (data->T_ref_std/data->T_c)*(data->T_ref_std/data->T_c));
-    double A = data->c_e*exp(Delta/(data->T_ref_std*Kb));
+    double DeltaRef = 2.15*Kb*data->T_c*(1 - (data->T_ref_std/data->T_c)*(data->T_ref_std/data->T_c));
+    double A = data->c_e*exp(DeltaRef/(data->T_ref_std*Kb));
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
-    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", Delta, A, gamma, B);
+    printf("DeltaRef: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
 
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);

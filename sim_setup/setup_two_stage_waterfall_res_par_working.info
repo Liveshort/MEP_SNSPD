@@ -47,3 +47,4 @@
 15; R_p1_wtf (parallel resistance stage 1 wire)
 100E-9; L_p0_wtf (parallel inductance detector wire)
 2E-9; L_p1_wtf (parallel inductance stage 1 wire)
+40E-9; L_M_wtf (inductance before the measurement capacitor)

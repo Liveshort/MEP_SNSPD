@@ -133,12 +133,12 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
     // formulae for these can be found in Yang
-    double Delta = 2.15*Kb*data->T_c*(1 - (data->T_ref_std/data->T_c)*(data->T_ref_std/data->T_c));
-    double A = data->c_e*exp(Delta/(data->T_ref_std*Kb));
+    double DeltaRef = 2.15*Kb*data->T_c*(1 - (data->T_ref_std/data->T_c)*(data->T_ref_std/data->T_c));
+    double A = data->c_e*exp(DeltaRef/(data->T_ref_std*Kb));
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
-    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", Delta, A, gamma, B);
+    printf("DeltaRef: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
 
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
