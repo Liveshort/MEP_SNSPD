@@ -34,6 +34,7 @@ typedef struct _simdata {
     // general info
     size_t J0;              // number of spatial samples of snspd 0
     size_t J1;              // number of spatial samples of snspd 1
+    size_t J2;              // number of spatial samples of snspd 1
     size_t N;               // number of time samples
     double tMax;            // maximum time, sim will run from 0 to tMax
     size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
@@ -72,32 +73,44 @@ typedef struct _simdata {
     double wireLength_1;    // length of the nanowire (divided into J1 segments)
     double wireThickness_1; // thickness of the nanowire
     double wireWidth_1;     // width of the nanowire
-    // data specific to the waterfall model (runtype 2/3)
+    double wireLength_2;    // length of the nanowire (divided into J1 segments)
+    double wireThickness_2; // thickness of the nanowire
+    double wireWidth_2;     // width of the nanowire
+    // data specific to the waterfall model (runtype 2/3 two stage w/o par, runtype 6/7 three stage par)
     double R_L_wtf;         // load resistor
     double R_s0_wtf;        // series resistor detector wire
     double R_s1_wtf;        // series resistor stage 1 wire
+    double R_s2_wtf;        // series resistor stage 2 wire
     double R_small_wtf;     // small resistor to direct current
     double R_01_wtf;        // resistor between stage 0 and 1
+    double R_12_wtf;        // resistor between stage 1 and 2
     double C_01_wtf;        // capacitor between stage 0 and 1
     double C_m_wtf;         // dc port bias tee
     double I_b0_wtf;        // bias current
     double I_b1_wtf;        // bias current
+    double I_b2_wtf;        // bias current
     double I_t0_wtf;        // target current
     double I_t1_wtf;        // target current
+    double I_t2_wtf;        // target current
     double initHS_l_wtf;    // initial hotspot length (to simulate a photon hit)
     double initHS_T_wtf;    // initial hotspot temperature
     double rho_norm_wtf;    // conductivity of the nanowire in normal state
     double L_w0_wtf;        // kinetic inductance of the nanowire
     double L_w1_wtf;        // kinetic inductance of the nanowire
+    double L_w2_wtf;        // kinetic inductance of the nanowire
     double T_ref_wtf;       // reference temperature for model parameters [Yang]
     double I_c0_wtf;        // critical current at 0K detector wire
     double I_c1_wtf;        // critical current at 0K stage 1 wire
-    // data specific to the waterfall model with parallel circuits (runtype 4/5)
+    double I_c2_wtf;        // critical current at 0K stage 2 wire
+    // data specific to the waterfall model with parallel circuits (runtype 4/5/6/7)
     double R_p0_wtf;        // parallel resistance detector wire
     double R_p1_wtf;        // parallel resistance stage 1 wire
+    double R_p2_wtf;        // parallel resistance stage 2 wire
     double L_p0_wtf;        // parallel inductance detector wire
     double L_p1_wtf;        // parallel inductance stage 1 wire
+    double L_p2_wtf;        // parallel inductance stage 2 wire
     double L_m_wtf;         // inductance measurement branch
+    double L_01_wtf;        // inductance between stage 0 and 1
 } SimData;
 
 void free_simres(SimRes * simRes);

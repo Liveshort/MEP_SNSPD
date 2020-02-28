@@ -10,6 +10,7 @@
 #include "yang_parallel.h"
 #include "two_stage_waterfall_res.h"
 #include "two_stage_waterfall_res_par.h"
+#include "three_stage_waterfall_res_par.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
@@ -22,11 +23,12 @@
 //            capacitor.
 SimRes * run_snspd_simulation(SimData * data, int runType) {
     printf("Runtype %d\n", runType);
-    size_t J0, J1;
+    size_t J0, J1, J2;
     // first locally save some important parameters that we will need all the time
     J0 = data->J0;
     // put J1 to zero to suppress "maybe uninitialized" warning from the gcc compiler
     J1 = 0;
+    J2 = 0;
     // ...and overwrite if we actually want to use it
     if (data->numberOfT > 1) J1 = data->J1;
     size_t N = data->N;
@@ -41,6 +43,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     res->J = calloc(data->numberOfT, sizeof(size_t));
     res->J[0] = J0;
     if (data->numberOfT > 1) res->J[1] = J1;
+    if (data->numberOfT > 2) res->J[2] = J2;
     res->N = N;
 
     res->numberOfT = data->numberOfT;
@@ -77,6 +80,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     res->dX = calloc(res->numberOfT, sizeof(double));
     res->dX[0] = data->wireLength / (J0 - 1);
     if (data->numberOfT > 1) res->dX[1] = data->wireLength_1 / (J1 - 1);
+    if (data->numberOfT > 2) res->dX[2] = data->wireLength_2 / (J2 - 1);
     res->dt = data->tMax / (N - 1);
 
     switch(runType) {
@@ -91,6 +95,9 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
             break;
         case 4:
             run_two_stage_waterfall_res_par(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
+            break;
+        case 6:
+            run_three_stage_waterfall_res_par(res, data, res->dX[0], res->dX[1], res->dX[2], res->dt, J0, J1, J2, N, NT, NE);
             break;
         default:
             printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
