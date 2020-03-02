@@ -117,19 +117,29 @@ int advance_time_electric_3_wtf_res_par(double * I0_np1, double * I1_np1, double
     A[47] = Y;
     A[48] = 1;
 
-    !! TODO INCLUDE X01
-    b[0] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I0_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_gam*(R_small + R_L - XM);
-    b[1] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I1_n*(R_p0 - XP0) - I_alp*R_01 - I_gam*(R_small + R_L - XM);
-    b[2] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I2_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_gam*(R_small + R_L - XM);
-    b[3] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I3_n*(R_p0 - XP0) - I_alp*R_01 - I_gam*(R_small + R_L - XM);
-    b[4] = V_c_n + 2*I_b_gam*(R_L + R_small) - I4_n*(R_w1_n + R_s1 - XW1) - I_gam*(R_small + R_L - XM);
-    b[5] = V_c_n + 2*I_b_gam*(R_L + R_small) - I5_n*(R_p1 - XP1) - I_gam*(R_small + R_L - XM);
+    //for (int i=0; i<7; i++) {
+    //    for (int j=0; j<7; j++) {
+    //        printf("%4.2e ", A[7*i+j]);
+    //    }
+    //    puts("");
+    //}
+
+    b[0] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I0_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_bet*(R_12 - X01)  - I_gam*(R_small + R_L - XM);
+    b[1] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I1_n*(R_p0 - XP0) - I_alp*R_01 - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM);
+    b[2] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I2_n*(R_w1_n + R_s1 - XW1) - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM);
+    b[3] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I3_n*(R_p1 - XP1) - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM);
+    b[4] = V_c_n + 2*I_b_gam*(R_L + R_small) - I4_n*(R_w2_n + R_s2 - XW2) - I_gam*(R_small + R_L - XM);
+    b[5] = V_c_n + 2*I_b_gam*(R_L + R_small) - I5_n*(R_p2 - XP2) - I_gam*(R_small + R_L - XM);
     b[6] = V_c_n + Y*(2*I_b_gam - I_gam);
+
+    //for (int j=0; j<7; j++) {
+    //    printf("%4.2e\n", b[j]);
+    //}
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
 
     if (info != 0) {
-        puts("Error encountered in matrix calculation of electrical model...\nExiting with code 3.");
+        printf("Error encountered in matrix calculation of electrical model (info = %d)...\nExiting with code 3.\n", info);
         exit(3);
     }
 
@@ -140,6 +150,11 @@ int advance_time_electric_3_wtf_res_par(double * I0_np1, double * I1_np1, double
     *I4_np1 = b[4];
     *I5_np1 = b[5];
     *V_c_np1 = b[6];
+
+    //puts("RESULT:");
+    //for (int j=0; j<7; j++) {
+    //    printf("%4.2e\n", b[j]);
+    //}
 
     free(A);
     free(b);
@@ -197,19 +212,19 @@ int calculate_bias_from_target_currents_3_wtf_res_par(double * v_I_b0, double * 
     A[7] = R_v2/(R_v2 + R_12) * (R_z2 - R_12)/(R_z2 + R_v2);
     A[8] = R_z2/(R_z2 + R_v2);
 
-    for (int i=0; i<9; i++) {
-        printf("%4.2e ", A[i]);
-    }
-    puts("");
+    //for (int i=0; i<9; i++) {
+    //    printf("%4.2e ", A[i]);
+    //}
+    //puts("");
 
     b[0] = I_v0;
     b[1] = I_v1;
     b[2] = I_v2;
 
-    for (int i=0; i<3; i++) {
-        printf("%4.2e ", b[i]);
-    }
-    puts("");
+    //for (int i=0; i<3; i++) {
+    //    printf("%4.2e ", b[i]);
+    //}
+    //puts("");
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
 
@@ -316,11 +331,11 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
         v_I_t3 = data->R_s1_wtf/(data->R_s1_wtf + data->R_p1_wtf)*(R_v0/(R_v0 + R_z0) * (R_12 + R_v2)/(R_12 + R_v2 + R_v1)*v_I_b0 + R_z1/(R_z1 + R_v1)*v_I_b1 + R_v2/(R_v2 + R_z2) * (R_01 + R_v0)/(R_01 + R_v0 + R_v1)*v_I_b2);
     }
     if (fabs(data->R_s2_wtf) < 1e-6) {
-        v_I_t4 = R_v0/(R_v0 + R_z0) * R_v1/(R_v1 + R_12 + R_v2) * R_v2/(R_v2 + R_12)*v_I_b0 + (R_z0 + R_v0)/(R_z0 - R_01) * R_v1/(R_v1 + R_12 + R_v2) * R_v2/(R_v2 + R_12)*v_I_b1 + R_z2/(R_z2 + R_v2)*v_I_b2;
+        v_I_t4 = R_v0/(R_z0 + R_v0) * (R_z0 - R_01)/R_z0 * R_v1/(R_v1 + R_v2 + R_12) * R_v2/(R_v2 + R_12)*v_I_b0 + R_v2/(R_v2 + R_12) * (R_z2 - R_12)/(R_z2 + R_v2)*v_I_b1 + R_z2/(R_z2 + R_v2)*v_I_b2;
         v_I_t5 = 0;
     } else {
-        v_I_t4 = data->R_p2_wtf/(data->R_s2_wtf + data->R_p2_wtf)*(R_v0/(R_v0 + R_z0) * R_v1/(R_v1 + R_12 + R_v2) * R_v2/(R_v2 + R_12)*v_I_b0 + (R_z0 + R_v0)/(R_z0 - R_01) * R_v1/(R_v1 + R_12 + R_v2) * R_v2/(R_v2 + R_12)*v_I_b1 + R_z2/(R_z2 + R_v2)*v_I_b2);
-        v_I_t5 = data->R_s2_wtf/(data->R_s2_wtf + data->R_p2_wtf)*(R_v0/(R_v0 + R_z0) * R_v1/(R_v1 + R_12 + R_v2) * R_v2/(R_v2 + R_12)*v_I_b0 + (R_z0 + R_v0)/(R_z0 - R_01) * R_v1/(R_v1 + R_12 + R_v2) * R_v2/(R_v2 + R_12)*v_I_b1 + R_z2/(R_z2 + R_v2)*v_I_b2);
+        v_I_t4 = data->R_p2_wtf/(data->R_s2_wtf + data->R_p2_wtf)*(R_v0/(R_z0 + R_v0) * (R_z0 - R_01)/R_z0 * R_v1/(R_v1 + R_v2 + R_12) * R_v2/(R_v2 + R_12)*v_I_b0 + R_v2/(R_v2 + R_12) * (R_z2 - R_12)/(R_z2 + R_v2)*v_I_b1 + R_z2/(R_z2 + R_v2)*v_I_b2);
+        v_I_t5 = data->R_s2_wtf/(data->R_s2_wtf + data->R_p2_wtf)*(R_v0/(R_z0 + R_v0) * (R_z0 - R_01)/R_z0 * R_v1/(R_v1 + R_v2 + R_12) * R_v2/(R_v2 + R_12)*v_I_b0 + R_v2/(R_v2 + R_12) * (R_z2 - R_12)/(R_z2 + R_v2)*v_I_b1 + R_z2/(R_z2 + R_v2)*v_I_b2);
     }
     for (unsigned n=0; n<=data->timeskip; ++n) {
         // set up initial current through the snspd in steady state (t = 0)
@@ -333,6 +348,12 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
         // set up initial voltage drop over the capacitor
         V_c[n] = (v_I_t4+v_I_t5)*R_v2;
     }
+    printf("%4.2e ", I0[0]);
+    printf("%4.2e ", I1[0]);
+    printf("%4.2e ", I2[0]);
+    printf("%4.2e ", I3[0]);
+    printf("%4.2e ", I4[0]);
+    printf("%4.2e\n", I5[0]);
     // put the right currents in the results
     res->I_b[0] = v_I_b0;
     res->I_b[1] = v_I_b1;
@@ -408,7 +429,7 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
             if (!data->allowOpt || cmp_vector(T0_prev, J0, data->T_sub, data->T_sub_eps) || cmp_vector(T1_prev, J1, data->T_sub, data->T_sub_eps) || cmp_vector(T2_prev, J2, data->T_sub, data->T_sub_eps)) {
                 advance_time_thermal(T0_prev, T0_curr, J0, data->T_sub, alpha0_n, c0_n, rho_seg0_n, kappa0_n, data->wireThickness, currentDensity_w0, dt, dX0);
                 advance_time_thermal(T1_prev, T1_curr, J1, data->T_sub, alpha1_n, c1_n, rho_seg1_n, kappa1_n, data->wireThickness_1, currentDensity_w1, dt, dX1);
-                advance_time_thermal(T2_prev, T2_curr, J2, data->T_sub, alpha2_n, c2_n, rho_seg2_n, kappa2_n, data->wireThickness_2, currentDensity_w1, dt, dX2);
+                advance_time_thermal(T2_prev, T2_curr, J2, data->T_sub, alpha2_n, c2_n, rho_seg2_n, kappa2_n, data->wireThickness_2, currentDensity_w2, dt, dX2);
             } else {
                 fill_vector(T0_curr, J0, data->T_sub);
                 fill_vector(T1_curr, J1, data->T_sub);
@@ -426,7 +447,7 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
             // update the current nanowire resistance
             R0[n] = sum_vector(R_seg0_n, J0);
             R1[n] = sum_vector(R_seg1_n, J1);
-            R2[n] = sum_vector(R_seg1_n, J2);
+            R2[n] = sum_vector(R_seg2_n, J2);
         } else {
             R0[n] = 0;
             R1[n] = 0;

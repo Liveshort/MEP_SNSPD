@@ -31,6 +31,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     J2 = 0;
     // ...and overwrite if we actually want to use it
     if (data->numberOfT > 1) J1 = data->J1;
+    if (data->numberOfT > 2) J2 = data->J2;
     size_t N = data->N;
     size_t NT = data->N/data->timeskip;
     size_t NE = data->N*data->ETratio;
