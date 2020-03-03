@@ -22,9 +22,12 @@
 *.la
 *.lo
 
+# Lock files
+.~lock*
+
 # Shared objects (inc. Windows DLLs)
 *.dll
-#*.so
+*.so
 *.so.*
 *.dylib
 
@@ -40,6 +43,8 @@ C/bld/*
 sim_results/*
 !sim_results/.gitkeep
 nosync/*
+Python/Monte_Carlo/res/*
+!Python/Monte_Carlo/res/.gitkeep
 
 # Debug files
 *.dSYM/
