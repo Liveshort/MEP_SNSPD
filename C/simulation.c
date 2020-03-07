@@ -50,7 +50,7 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfC = 2;
     } else if (data->runType == 6) {
         data->numberOfT = 3;
-        data->numberOfI = 7;
+        data->numberOfI = 6;
         data->numberOfR = 3;
         data->numberOfC = 1;
     } else if (data->runType == 7) {
@@ -251,7 +251,7 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p1_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_p2_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_m_wtf, dump) < 1) exit(6);
-        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_01_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_12_wtf, dump) < 1) exit(6);
     }
 
     fclose(fp);

@@ -110,7 +110,7 @@ typedef struct _simdata {
     double L_p1_wtf;        // parallel inductance stage 1 wire
     double L_p2_wtf;        // parallel inductance stage 2 wire
     double L_m_wtf;         // inductance measurement branch
-    double L_01_wtf;        // inductance between stage 0 and 1
+    double L_12_wtf;        // inductance between stage 0 and 1
 } SimData;
 
 void free_simres(SimRes * simRes);

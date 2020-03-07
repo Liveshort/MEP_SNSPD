@@ -8,38 +8,6 @@
 #include "helper.h"
 #include "thermal.h"
 
-// returns the critical current for a segment of a given temperature T
-static inline double I_cT_yang(double I_c0, double T, double T_c) {
-    return (I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
-}
-
-// updates the alpha, kappa, c and conductivity values for all segments
-// takes into account state dependence etc, specific to the model used in [Yang]
-int update_thermal_values_yang(double * alpha_n, double * kappa_n, double * c_n, double * rho_seg_n, double * R_seg_n, double * T_n, size_t J, double A, double B, double gamma, double T_c, double I_n, double I_c0, double rho_norm, double c_p, double T_ref, double R_seg) {
-    // loop over all segments at the current timestep
-    for (unsigned j=0; j<J; ++j) {
-        // alpha is taken to be state independent, not strictly true, but for more, see [Yang]
-        alpha_n[j] = B * pow(T_n[j], 3);
-        // model values for kappa, c and rho for normal state
-        if (T_n[j] > T_c || I_n > I_cT_yang(I_c0, T_n[j], T_c)) {
-            kappa_n[j] = Lorentz*T_n[j]/rho_norm;
-            c_n[j] = gamma*T_n[j] + c_p*pow(T_n[j]/T_ref, 3);
-            rho_seg_n[j] = rho_norm;
-            R_seg_n[j] = R_seg;
-        }
-        // model values for kappa c and rho for superconducting state
-        else {
-            kappa_n[j] = Lorentz*T_n[j]/rho_norm * T_n[j]/T_c;
-            double Delta = 2.15*T_c*Kb*(1 - (T_n[j]/T_c)*(T_n[j]/T_c));
-            c_n[j] = A*exp(-Delta/(Kb*T_n[j])) + c_p*pow(T_n[j]/T_ref, 3);
-            rho_seg_n[j] = 0;
-            R_seg_n[j] = 0;
-        }
-    }
-
-    return 0;
-}
-
 int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, double V_c_n, double X, double Y, double R_w_n, double R_w_np1, double R_L, double R_s, double I_b) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
@@ -179,7 +147,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
         if (!flagDone && n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
-            update_thermal_values_yang(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T_curr, J, A, B, gamma, data->T_c, I[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+            update_thermal_values(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T_curr, J, A, B, gamma, data->T_c, I[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
             // update the current nanowire resistance
             R[n] = sum_vector(R_seg_n, J);
         } else {

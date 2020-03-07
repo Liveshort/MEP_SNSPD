@@ -5,6 +5,39 @@
 
 #include "linalg.h"
 #include "helper.h"
+#include "types.h"
+
+// returns the critical current for a segment of a given temperature T
+static inline double I_cT(double I_c0, double T, double T_c) {
+    return (I_c0 * (1 - T/T_c*T/T_c)*(1 - T/T_c*T/T_c));
+}
+
+// updates the alpha, kappa, c and conductivity values for all segments
+// takes into account state dependence etc, specific to the model used in [Yang]
+int update_thermal_values(double * alpha_n, double * kappa_n, double * c_n, double * rho_seg_n, double * R_seg_n, double * T_n, size_t J, double A, double B, double gamma, double T_c, double I_n, double I_c0, double rho_norm, double c_p, double T_ref, double R_seg) {
+    // loop over all segments at the current timestep
+    for (unsigned j=0; j<J; ++j) {
+        // alpha is taken to be state independent, not strictly true, but for more, see [Yang]
+        alpha_n[j] = B * pow(T_n[j], 3);
+        // model values for kappa, c and rho for normal state
+        if (T_n[j] > T_c || I_n > I_cT(I_c0, T_n[j], T_c)) {
+            kappa_n[j] = Lorentz*T_n[j]/rho_norm;
+            c_n[j] = gamma*T_n[j] + c_p*pow(T_n[j]/T_ref, 3);
+            rho_seg_n[j] = rho_norm;
+            R_seg_n[j] = R_seg;
+        }
+        // model values for kappa c and rho for superconducting state
+        else {
+            kappa_n[j] = Lorentz*T_n[j]/rho_norm * T_n[j]/T_c;
+            double Delta = 2.15*T_c*Kb*(1 - (T_n[j]/T_c)*(T_n[j]/T_c));
+            c_n[j] = A*exp(-Delta/(Kb*T_n[j])) + c_p*pow(T_n[j]/T_ref, 3);
+            rho_seg_n[j] = 0;
+            R_seg_n[j] = 0;
+        }
+    }
+
+    return 0;
+}
 
 // function that advances time a single time step. It sets up the tridiagonal matrix and hands
 //     it to the solver in the linalg code.

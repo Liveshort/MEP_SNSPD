@@ -7,10 +7,9 @@
 #include "snspd.h"
 #include "helper.h"
 #include "yang.h"
-#include "yang_parallel.h"
-#include "two_stage_waterfall_res.h"
-#include "two_stage_waterfall_res_par.h"
-#include "three_stage_waterfall_res_par.h"
+#include "yang_par.h"
+#include "waterfall_2s_res.h"
+#include "waterfall_3s_res.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
@@ -91,14 +90,11 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
         case 1:
             run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NT, NE);
             break;
-        case 2:
-            run_two_stage_waterfall_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
-            break;
         case 4:
-            run_two_stage_waterfall_res_par(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
+            run_waterfall_2s_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
             break;
         case 6:
-            run_three_stage_waterfall_res_par(res, data, res->dX[0], res->dX[1], res->dX[2], res->dt, J0, J1, J2, N, NT, NE);
+            run_waterfall_3s_res(res, data, res->dX[0], res->dX[1], res->dX[2], res->dt, J0, J1, J2, N, NT, NE);
             break;
         default:
             printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
