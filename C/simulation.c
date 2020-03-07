@@ -50,7 +50,7 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfC = 2;
     } else if (data->runType == 6) {
         data->numberOfT = 3;
-        data->numberOfI = 6;
+        data->numberOfI = 7;
         data->numberOfR = 3;
         data->numberOfC = 1;
     } else if (data->runType == 7) {

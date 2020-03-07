@@ -37,6 +37,7 @@ I2 = []
 I3 = []
 I4 = []
 I5 = []
+Itrns = []
 R0 = []
 R1 = []
 R2 = []
@@ -67,6 +68,8 @@ with open("../sim_results/I.bin", "rb") as file:
         I4.append(item)
     for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
         I5.append(item)
+    for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
+        Itrns.append(item)
 
 I0 = np.array(I0)
 I1 = np.array(I1)
@@ -74,6 +77,7 @@ I2 = np.array(I2)
 I3 = np.array(I3)
 I4 = np.array(I4)
 I5 = np.array(I5)
+Itrns = np.array(Itrns)
 
 with open("../sim_results/R.bin", "rb") as file:
     for (item, ) in struct.iter_unpack('d', file.read(8*N*ETratio//timeskip*10)):
@@ -132,10 +136,25 @@ plt.plot(tE*dt*1e9, I2*1e6)
 plt.plot(tE*dt*1e9, I3*1e6)
 plt.plot(tE*dt*1e9, I4*1e6)
 plt.plot(tE*dt*1e9, I5*1e6)
-plt.plot(tE*dt*1e9, (I_b0 + I_b1 + I_b2 - I0 - I1 - I2 - I3 - I4 - I5)*1e6)
+plt.plot(tE*dt*1e9, Itrns*1e6)
+plt.plot(tE*dt*1e9, (I_b0 + I_b1 + I_b2 - I0 - I1 - I2 - I3 - I4 - I5 - Itrns)*1e6)
 plt.xlabel("t (ns)")
 plt.ylabel("I ($\mu$A)")
-plt.legend(["I0 (detector wire)", "I1 (detector par)", "I2 (stage one wat wire)", "I3 (stage one wat par)", "I4 (stage two wat wire)", "I5 (stage two wat par)", "I_load (load current)"], loc="upper right")
+plt.legend(["I0 (detector wire)", "I1 (detector par)", "I2 (stage one wat wire)", "I3 (stage one wat par)", "I4 (stage two wat wire)", "I5 (stage two wat par)", "I_trns (transmission)", "I_load (load current)"], loc="upper right")
+plt.show(block=False)
+
+plt.figure()
+plt.plot(tE*dt*1e9, I0*1e6)
+#plt.plot(tE*dt*1e9, I1*1e6)
+plt.plot(tE*dt*1e9, I2*1e6)
+#plt.plot(tE*dt*1e9, I3*1e6)
+plt.plot(tE*dt*1e9, I4*1e6)
+#plt.plot(tE*dt*1e9, I5*1e6)
+plt.plot(tE*dt*1e9, Itrns*1e6)
+plt.plot(tE*dt*1e9, (I_b0 + I_b1 + I_b2 - I0 - I1 - I2 - I3 - I4 - I5 - Itrns)*1e6)
+plt.xlabel("t (ns)")
+plt.ylabel("I ($\mu$A)")
+plt.legend(["I0 (detector wire)", "I2 (stage one wat wire)", "I4 (stage two wat wire)", "I_trns (transmission)", "I_load (load current)"], loc="upper right")
 plt.show(block=False)
 
 plt.figure()

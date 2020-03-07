@@ -42,11 +42,10 @@ int update_thermal_values_3_wtf_res_par(double * alpha_n, double * kappa_n, doub
 
 // advances the electric model one timestep using BLAS matrix algebra.
 // you need the LAPACK for this, or work out the matrix logic on your own (not recommended)
-int advance_time_electric_3_wtf_res_par(double * I0_np1, double * I1_np1, double * I2_np1, double * I3_np1, double * I4_np1, double * I5_np1, double * V_c_np1, double * I_trns_np1, double * V_c_trns_np1, double I0_n, double I1_n, double I2_n, double I3_n, double I4_n, double I5_n, double V_c_n, double * I_trns_n, double * V_c_trns_n, double XW0, double XP0, double XW1, double XP1, double XW2, double XP2, double X01, double XM, double XT, double YM, double YT, double R_w0_n, double R_w0_np1, double R_w1_n, double R_w1_np1, double R_w2_n, double R_w2_np1, double R_L, double R_01, double R_12, double R_small, double R_s0, double R_s1, double R_s2, double R_p0, double R_p1, double R_p2, double I_b0, double I_b1, double I_b2) {
+int advance_time_electric_3_wtf_res_par(double * I0_np1, double * I1_np1, double * I2_np1, double * I3_np1, double * I4_np1, double * I5_np1, double * V_c_np1, double I0_n, double I1_n, double I2_n, double I3_n, double I4_n, double I5_n, double V_c_n, double XW0, double XP0, double XW1, double XP1, double XW2, double XP2, double X01, double XM, double Y, double R_w0_n, double R_w0_np1, double R_w1_n, double R_w1_np1, double R_w2_n, double R_w2_np1, double R_L, double R_01, double R_12, double R_small, double R_s0, double R_s1, double R_s2, double R_p0, double R_p1, double R_p2, double I_b0, double I_b1, double I_b2) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
-    n = 27; nrhs = 1;
-    unsigned NT = 10;
+    n = 7; nrhs = 1;
 
     double Q_ap = R_small + R_L + XM + X01 + R_12 + R_01;
     double Q_bp = R_small + R_L + XM + X01 + R_12;
@@ -62,204 +61,69 @@ int advance_time_electric_3_wtf_res_par(double * I0_np1, double * I1_np1, double
     double * b = calloc(n*nrhs, sizeof(double));
     lapack_int * ipiv = calloc(n, sizeof(lapack_int));
 
-    A[0] = XW0 + R_w0_np1 + R_s0 + Q_ap + NT*XT;
-    A[1] = Q_ap + NT*XT;
-    A[2] = Q_bp + NT*XT;
-    A[3] = Q_bp + NT*XT;
-    A[4] = Q_gp + NT*XT;
-    A[5] = Q_gp + NT*XT;
-    for (unsigned i=1; i<=NT; i++)
-        A[5+i] = R_L + (NT-i)*XT;
-    A[16] = -1;
+    A[0] = XW0 + R_w0_np1 + R_s0 + Q_ap;
+    A[1] = Q_ap;
+    A[2] = Q_bp;
+    A[3] = Q_bp;
+    A[4] = Q_gp;
+    A[5] = Q_gp;
+    A[6] = -1;
 
-    A[27] = Q_ap + NT*XT;
-    A[28] = XP0 + R_p0 + Q_ap + NT*XT;
-    A[29] = Q_bp + NT*XT;
-    A[30] = Q_bp + NT*XT;
-    A[31] = Q_gp + NT*XT;
-    A[32] = Q_gp + NT*XT;
-    for (unsigned i=1; i<=NT; i++)
-        A[32+i] = R_L + (NT-i)*XT;
-    A[43] = -1;
+    A[7] = Q_ap;
+    A[8] = XP0 + R_p0 + Q_ap;
+    A[9] = Q_bp;
+    A[10] = Q_bp;
+    A[11] = Q_gp;
+    A[12] = Q_gp;
+    A[13] = -1;
 
-    A[54] = Q_bp + NT*XT;
-    A[55] = Q_bp + NT*XT;
-    A[56] = XW1 + R_w1_np1 + R_s1 + Q_bp + NT*XT;
-    A[57] = Q_bp + NT*XT;
-    A[58] = Q_gp + NT*XT;
-    A[59] = Q_gp + NT*XT;
-    for (unsigned i=1; i<=NT; i++)
-        A[59+i] = R_L + (NT-i)*XT;
-    A[70] = -1;
+    A[14] = Q_bp;
+    A[15] = Q_bp;
+    A[16] = XW1 + R_w1_np1 + R_s1 + Q_bp;
+    A[17] = Q_bp;
+    A[18] = Q_gp;
+    A[19] = Q_gp;
+    A[20] = -1;
 
-    A[81] = Q_bp + NT*XT;
-    A[82] = Q_bp + NT*XT;
-    A[83] = Q_bp + NT*XT;
-    A[84] = XP1 + R_p1 + Q_bp + NT*XT;
-    A[85] = Q_gp + NT*XT;
-    A[86] = Q_gp + NT*XT;
-    for (unsigned i=1; i<=NT; i++)
-        A[86+i] = R_L + (NT-i)*XT;
-    A[97] = -1;
+    A[21] = Q_bp;
+    A[22] = Q_bp;
+    A[23] = Q_bp;
+    A[24] = XP1 + R_p1 + Q_bp;
+    A[25] = Q_gp;
+    A[26] = Q_gp;
+    A[27] = -1;
 
-    A[108] = Q_gp + NT*XT;
-    A[109] = Q_gp + NT*XT;
-    A[110] = Q_gp + NT*XT;
-    A[111] = Q_gp + NT*XT;
-    A[112] = XW2 + R_w2_np1 + R_s2 + Q_gp + NT*XT;
-    A[113] = Q_gp + NT*XT;
-    for (unsigned i=1; i<=NT; i++)
-        A[113+i] = R_L + (NT-i)*XT;
-    A[124] = -1;
+    A[28] = Q_gp;
+    A[29] = Q_gp;
+    A[30] = Q_gp;
+    A[31] = Q_gp;
+    A[32] = XW2 + R_w2_np1 + R_s2 + Q_gp;
+    A[33] = Q_gp;
+    A[34] = -1;
 
-    A[135] = Q_gp + NT*XT;
-    A[136] = Q_gp + NT*XT;
-    A[137] = Q_gp + NT*XT;
-    A[138] = Q_gp + NT*XT;
-    A[139] = Q_gp + NT*XT;
-    A[140] = XP2 + R_p2 + Q_gp + NT*XT;
-    for (unsigned i=1; i<=NT; i++)
-        A[140+i] = R_L + (NT-i)*XT;
-    A[151] = -1;
+    A[35] = Q_gp;
+    A[36] = Q_gp;
+    A[37] = Q_gp;
+    A[38] = Q_gp;
+    A[39] = Q_gp;
+    A[40] = XP2 + R_p2 + Q_gp;
+    A[41] = -1;
 
-    for (unsigned i=1; i<=6; i++)
-        A[161+i] = R_L + (NT-1)*XT;
-    for (unsigned i=1; i<=10; i++)
-        A[167+i] = R_L + (NT-i)*XT;
-    A[179] = 1;
+    A[42] = Y;
+    A[43] = Y;
+    A[44] = Y;
+    A[45] = Y;
+    A[46] = Y;
+    A[47] = Y;
+    A[48] = 1;
 
-    for (unsigned i=1; i<=7; i++)
-        A[188+i] = R_L + (NT-2)*XT;
-    for (unsigned i=2; i<=10; i++)
-        A[194+i] = R_L + (NT-i)*XT;
-    A[207] = 1;
-
-    for (unsigned i=1; i<=8; i++)
-        A[215+i] = R_L + (NT-3)*XT;
-    for (unsigned i=3; i<=10; i++)
-        A[221+i] = R_L + (NT-i)*XT;
-    A[235] = 1;
-
-    for (unsigned i=1; i<=9; i++)
-        A[242+i] = R_L + (NT-4)*XT;
-    for (unsigned i=4; i<=10; i++)
-        A[248+i] = R_L + (NT-i)*XT;
-    A[263] = 1;
-
-    for (unsigned i=1; i<=10; i++)
-        A[269+i] = R_L + (NT-5)*XT;
-    for (unsigned i=5; i<=10; i++)
-        A[275+i] = R_L + (NT-i)*XT;
-    A[291] = 1;
-
-    for (unsigned i=1; i<=11; i++)
-        A[296+i] = R_L + (NT-6)*XT;
-    for (unsigned i=6; i<=10; i++)
-        A[302+i] = R_L + (NT-i)*XT;
-    A[319] = 1;
-
-    for (unsigned i=1; i<=12; i++)
-        A[323+i] = R_L + (NT-7)*XT;
-    for (unsigned i=7; i<=10; i++)
-        A[329+i] = R_L + (NT-i)*XT;
-    A[347] = 1;
-
-    for (unsigned i=1; i<=13; i++)
-        A[350+i] = R_L + (NT-8)*XT;
-    for (unsigned i=8; i<=10; i++)
-        A[356+i] = R_L + (NT-i)*XT;
-    A[375] = 1;
-
-    for (unsigned i=1; i<=14; i++)
-        A[377+i] = R_L + (NT-9)*XT;
-    for (unsigned i=9; i<=10; i++)
-        A[383+i] = R_L + (NT-i)*XT;
-    A[403] = 1;
-
-    for (unsigned i=1; i<=16; i++)
-        A[404+i] = R_L;
-    A[431] = 1;
-
-    A[432] = YM;
-    A[433] = YM;
-    A[434] = YM;
-    A[435] = YM;
-    A[436] = YM;
-    A[437] = YM;
-    A[448] = 1;
-
-    A[465] = -YT;
-    A[476] = 1;
-
-    A[493] = -YT;
-    A[504] = 1;
-
-    A[521] = -YT;
-    A[532] = 1;
-
-    A[549] = -YT;
-    A[560] = 1;
-
-    A[577] = -YT;
-    A[588] = 1;
-
-    A[605] = -YT;
-    A[616] = 1;
-
-    A[633] = -YT;
-    A[644] = 1;
-
-    A[661] = -YT;
-    A[672] = 1;
-
-    A[689] = -YT;
-    A[700] = 1;
-
-    A[717] = -YT;
-    A[728] = 1;
-
-    //for (int i=0; i<27; i++) {
-    //    for (int j=0; j<27; j++) {
-    //        printf("%+8.2g ", A[27*i+j]);
-    //    }
-    //    puts("");
-    //}
-
-    b[0] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I0_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM) + I_gam*NT*XT + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(R_L);
-    b[1] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I1_n*(R_p0 - XP0) - I_alp*R_01 - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM) + I_gam*NT*XT + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(R_L);
-    b[2] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I2_n*(R_w1_n + R_s1 - XW1) - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM) + I_gam*NT*XT + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(R_L);
-    b[3] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I3_n*(R_p1 - XP1) - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM) + I_gam*NT*XT + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(R_L);
-    b[4] = V_c_n + 2*I_b_gam*(R_L + R_small) - I4_n*(R_w2_n + R_s2 - XW2) - I_gam*(R_small + R_L - XM) + I_gam*NT*XT + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(R_L);
-    b[5] = V_c_n + 2*I_b_gam*(R_L + R_small) - I5_n*(R_p2 - XP2) - I_gam*(R_small + R_L - XM) + I_gam*NT*XT + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(R_L);
-
-    b[6] = -V_c_trns_n[0] + 2*I_b_gam*R_L + I_gam*(9*XT - R_L) + I_trns_n[0]*(9*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[7] = -V_c_trns_n[1] + 2*I_b_gam*R_L + I_gam*(8*XT - R_L) + I_trns_n[0]*(8*XT - R_L) + I_trns_n[1]*(8*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[8] = -V_c_trns_n[2] + 2*I_b_gam*R_L + I_gam*(7*XT - R_L) + I_trns_n[0]*(7*XT - R_L) + I_trns_n[1]*(7*XT - R_L) + I_trns_n[2]*(7*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[9] = -V_c_trns_n[3] + 2*I_b_gam*R_L + I_gam*(6*XT - R_L) + I_trns_n[0]*(6*XT - R_L) + I_trns_n[1]*(6*XT - R_L) + I_trns_n[2]*(6*XT - R_L) + I_trns_n[3]*(6*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[10] = -V_c_trns_n[4] + 2*I_b_gam*R_L + I_gam*(5*XT - R_L) + I_trns_n[0]*(5*XT - R_L) + I_trns_n[1]*(5*XT - R_L) + I_trns_n[2]*(5*XT - R_L) + I_trns_n[3]*(5*XT - R_L) + I_trns_n[4]*(5*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[11] = -V_c_trns_n[5] + 2*I_b_gam*R_L + I_gam*(4*XT - R_L) + I_trns_n[0]*(4*XT - R_L) + I_trns_n[1]*(4*XT - R_L) + I_trns_n[2]*(4*XT - R_L) + I_trns_n[3]*(4*XT - R_L) + I_trns_n[4]*(4*XT - R_L) + I_trns_n[5]*(4*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[12] = -V_c_trns_n[6] + 2*I_b_gam*R_L + I_gam*(3*XT - R_L) + I_trns_n[0]*(3*XT - R_L) + I_trns_n[1]*(3*XT - R_L) + I_trns_n[2]*(3*XT - R_L) + I_trns_n[3]*(3*XT - R_L) + I_trns_n[4]*(3*XT - R_L) + I_trns_n[5]*(3*XT - R_L) + I_trns_n[6]*(3*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[13] = -V_c_trns_n[7] + 2*I_b_gam*R_L + I_gam*(2*XT - R_L) + I_trns_n[0]*(2*XT - R_L) + I_trns_n[1]*(2*XT - R_L) + I_trns_n[2]*(2*XT - R_L) + I_trns_n[3]*(2*XT - R_L) + I_trns_n[4]*(2*XT - R_L) + I_trns_n[5]*(2*XT - R_L) + I_trns_n[6]*(2*XT - R_L) + I_trns_n[7]*(2*XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[14] = -V_c_trns_n[8] + 2*I_b_gam*R_L + I_gam*(XT - R_L) + I_trns_n[0]*(XT - R_L) + I_trns_n[1]*(XT - R_L) + I_trns_n[2]*(XT - R_L) + I_trns_n[3]*(XT - R_L) + I_trns_n[4]*(XT - R_L) + I_trns_n[5]*(XT - R_L) + I_trns_n[6]*(XT - R_L) + I_trns_n[7]*(XT - R_L) + I_trns_n[8]*(XT - R_L) + I_trns_n[9]*(-R_L);
-    b[15] = -V_c_trns_n[9] + 2*I_b_gam*R_L + I_gam*(- R_L) + I_trns_n[0]*(- R_L) + I_trns_n[1]*(- R_L) + I_trns_n[2]*(- R_L) + I_trns_n[3]*(- R_L) + I_trns_n[4]*(- R_L) + I_trns_n[5]*(- R_L) + I_trns_n[6]*(- R_L) + I_trns_n[7]*(- R_L) + I_trns_n[8]*(- R_L) + I_trns_n[9]*(-R_L);
-
-    b[16] = V_c_n + YM*(2*I_b_gam - I_gam);
-
-    b[17] = V_c_trns_n[0] + YT*I_trns_n[0];
-    b[18] = V_c_trns_n[1] + YT*I_trns_n[1];
-    b[19] = V_c_trns_n[2] + YT*I_trns_n[2];
-    b[20] = V_c_trns_n[3] + YT*I_trns_n[3];
-    b[21] = V_c_trns_n[4] + YT*I_trns_n[4];
-    b[22] = V_c_trns_n[5] + YT*I_trns_n[5];
-    b[23] = V_c_trns_n[6] + YT*I_trns_n[6];
-    b[24] = V_c_trns_n[7] + YT*I_trns_n[7];
-    b[25] = V_c_trns_n[8] + YT*I_trns_n[8];
-    b[26] = V_c_trns_n[9] + YT*I_trns_n[9];
-
-    //for (int j=0; j<27; j++) {
-    //    printf("%4.2e\n", b[j]);
-    //}
-    //puts("");
+    b[0] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I0_n*(R_w0_n + R_s0 - XW0) - I_alp*R_01 - I_bet*(R_12 - X01)  - I_gam*(R_small + R_L - XM);
+    b[1] = V_c_n + 2*I_b0*R_01 + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I1_n*(R_p0 - XP0) - I_alp*R_01 - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM);
+    b[2] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I2_n*(R_w1_n + R_s1 - XW1) - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM);
+    b[3] = V_c_n + 2*I_b_bet*R_12 + 2*I_b_gam*(R_L + R_small) - I3_n*(R_p1 - XP1) - I_bet*(R_12 - X01) - I_gam*(R_small + R_L - XM);
+    b[4] = V_c_n + 2*I_b_gam*(R_L + R_small) - I4_n*(R_w2_n + R_s2 - XW2) - I_gam*(R_small + R_L - XM);
+    b[5] = V_c_n + 2*I_b_gam*(R_L + R_small) - I5_n*(R_p2 - XP2) - I_gam*(R_small + R_L - XM);
+    b[6] = V_c_n + Y*(2*I_b_gam - I_gam);
 
     info = LAPACKE_dgesv(LAPACK_ROW_MAJOR, n, nrhs, A, n, ipiv, b, nrhs);
 
@@ -274,32 +138,7 @@ int advance_time_electric_3_wtf_res_par(double * I0_np1, double * I1_np1, double
     *I3_np1 = b[3];
     *I4_np1 = b[4];
     *I5_np1 = b[5];
-    I_trns_np1[0] = b[6];
-    I_trns_np1[1] = b[7];
-    I_trns_np1[2] = b[8];
-    I_trns_np1[3] = b[9];
-    I_trns_np1[4] = b[10];
-    I_trns_np1[5] = b[11];
-    I_trns_np1[6] = b[12];
-    I_trns_np1[7] = b[13];
-    I_trns_np1[8] = b[14];
-    I_trns_np1[9] = b[15];
-    *V_c_np1 = b[16];
-    V_c_trns_np1[0] = b[17];
-    V_c_trns_np1[1] = b[18];
-    V_c_trns_np1[2] = b[19];
-    V_c_trns_np1[3] = b[20];
-    V_c_trns_np1[4] = b[21];
-    V_c_trns_np1[5] = b[22];
-    V_c_trns_np1[6] = b[23];
-    V_c_trns_np1[7] = b[24];
-    V_c_trns_np1[8] = b[25];
-    V_c_trns_np1[9] = b[26];
-
-    //for (int j=0; j<27; j++) {
-    //    printf("%4.2e\n", b[j]);
-    //}
-    //puts("");
+    *V_c_np1 = b[6];
 
     free(A);
     free(b);
@@ -380,13 +219,6 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
     double * R1 = res->R[1];
     double * R2 = res->R[2];
     double * V_c = res->V_c[0];
-
-    double * I_trns_prev = calloc(10, sizeof(double));
-    double * I_trns_curr = calloc(10, sizeof(double));
-    double * V_c_trns_prev = calloc(10, sizeof(double));
-    double * V_c_trns_curr = calloc(10, sizeof(double));
-
-    double * Itrns = res->I[6];
 
     // set up vectors to temporarily save the current and next T
     // this saves a lot of memory for larger simulations
@@ -541,11 +373,7 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
     double XP2 = (2*data->L_p2_wtf)/dt;
     double X01 = (2*data->L_01_wtf)/dt;
     double XM = (2*data->L_m_wtf)/dt;
-    double YM = dt/(2*data->C_m_wtf);
-    double C_T = 2E-12;
-    double L_T = 5E-9;
-    double XT = (2*L_T)/dt;
-    double YT = dt/(2*C_T);
+    double Y = dt/(2*data->C_m_wtf);
 
     // set a flag to check if done
     int flagDone = 0;
@@ -590,7 +418,7 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
         currentDensity_w1 = I2[n-1]/(data->wireWidth_1*data->wireThickness_1);
         currentDensity_w2 = I4[n-1]/(data->wireWidth_2*data->wireThickness_2);
         // update the electric values
-        advance_time_electric_3_wtf_res_par(&I0[n], &I1[n], &I2[n], &I3[n], &I4[n], &I5[n], &V_c[n], I_trns_curr, V_c_trns_curr, I0[n-1], I1[n-1], I2[n-1], I3[n-1], I4[n-1], I5[n-1], V_c[n-1], I_trns_prev, V_c_trns_prev, XW0, XP0, XW1, XP1, XW2, XP2, X01, XM, XT, YM, YT, R0[n-1], R0[n], R1[n-1], R1[n], R2[n-1], R2[n], data->R_L_wtf, data->R_01_wtf, data->R_12_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_s2_wtf, data->R_p0_wtf, data->R_p1_wtf, data->R_p2_wtf, v_I_b0, v_I_b1, v_I_b2);
+        advance_time_electric_3_wtf_res_par(&I0[n], &I1[n], &I2[n], &I3[n], &I4[n], &I5[n], &V_c[n], I0[n-1], I1[n-1], I2[n-1], I3[n-1], I4[n-1], I5[n-1], V_c[n-1], XW0, XP0, XW1, XP1, XW2, XP2, X01, XM, Y, R0[n-1], R0[n], R1[n-1], R1[n], R2[n-1], R2[n], data->R_L_wtf, data->R_01_wtf, data->R_12_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_s2_wtf, data->R_p0_wtf, data->R_p1_wtf, data->R_p2_wtf, v_I_b0, v_I_b1, v_I_b2);
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;
@@ -616,16 +444,6 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
             else
                 T2_curr = T_stash_5;
         }
-
-        Itrns[n] = sum_vector(I_trns_curr, 10);
-
-        // update transmission currents and voltages
-        double * tmp = I_trns_prev;
-        I_trns_prev = I_trns_curr;
-        I_trns_curr = tmp;
-        tmp = V_c_trns_prev;
-        V_c_trns_prev = V_c_trns_curr;
-        V_c_trns_curr = tmp;
     }
 
     // free allocated space
@@ -653,11 +471,6 @@ int run_three_stage_waterfall_res_par(SimRes * res, SimData * data, double dX0, 
     free(c2_n);
     free(rho_seg2_n);
     free(R_seg2_n);
-
-    free(I_trns_prev);
-    free(I_trns_curr);
-    free(V_c_trns_prev);
-    free(V_c_trns_curr);
 
     // print result
     puts("\nSimulation completed.");
