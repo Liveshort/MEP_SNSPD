@@ -4,10 +4,13 @@
 // some global constants
 const double Kb;            // boltzmann constant
 const double Lorentz;       // Lorentz number
+const double C_T;           // transmission line capacitors
+const double L_T;           // transmission line inductors
 
 // structure that contains the result of the simulation of an snspd
 typedef struct _simres {
     int runType;            // runtype of the simulation (0: yang, 1: yang_parallel)
+    int tlType;             // account for transmission (0: no, 1: rfl, 2: norfl)
     size_t * J;             // number of spatial samples
     size_t N;               // number of time samples
     double * dX;            // delta X
@@ -31,13 +34,15 @@ typedef struct _simdata {
     // runtype
     int runType;            // runtype of the simulation (0: yang, 1: yang parallel)
     int allowOpt;           // if 1, optimizes thermal when wire has cooled to within T_sub_eps
+    int accountRfl;         // if 1, account for reflections in the transmission line, increases calculation time sharply. Is disabled altogether when no transmission line is used
     // general info
     size_t J0;              // number of spatial samples of snspd 0
     size_t J1;              // number of spatial samples of snspd 1
-    size_t J2;              // number of spatial samples of snspd 1
+    size_t J2;              // number of spatial samples of snspd 2
     size_t N;               // number of time samples
+    size_t NTL;             // number of transmission line elements. Choose zero to run sim without transmission line
     double tMax;            // maximum time, sim will run from 0 to tMax
-    size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result
+    size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result. !!!! Has to be a multiple of 10, because the electric resolution is always 10 times higher than the thermal resolution
     size_t ETratio;         // ratio between time calculated for electrical model and thermal model
     size_t numberOfT;       // number of temperature vectors that need to be measured
     size_t numberOfI;       // number of currents that need to be measured

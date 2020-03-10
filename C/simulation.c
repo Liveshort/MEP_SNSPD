@@ -20,42 +20,42 @@ int collect_data(FILE * fp, SimData * data) {
     // set up number of vectors needed based on the runtype
     if (data->runType == 0) {
         data->numberOfT = 1;
-        data->numberOfI = 1;
+        data->numberOfI = 4;
         data->numberOfR = 1;
         data->numberOfC = 1;
     } else if (data->runType == 1) {
         data->numberOfT = 1;
-        data->numberOfI = 2;
+        data->numberOfI = 5;
         data->numberOfR = 1;
         data->numberOfC = 1;
     } else if (data->runType == 2) {
         data->numberOfT = 2;
-        data->numberOfI = 2;
+        data->numberOfI = 5;
         data->numberOfR = 2;
         data->numberOfC = 1;
     } else if (data->runType == 3) {
         data->numberOfT = 2;
-        data->numberOfI = 2;
+        data->numberOfI = 5;
         data->numberOfR = 2;
         data->numberOfC = 2;
     } else if (data->runType == 4) {
         data->numberOfT = 2;
-        data->numberOfI = 4;
+        data->numberOfI = 7;
         data->numberOfR = 2;
         data->numberOfC = 1;
     } else if (data->runType == 5) {
         data->numberOfT = 2;
-        data->numberOfI = 4;
+        data->numberOfI = 7;
         data->numberOfR = 2;
         data->numberOfC = 2;
     } else if (data->runType == 6) {
         data->numberOfT = 3;
-        data->numberOfI = 6;
+        data->numberOfI = 9;
         data->numberOfR = 3;
         data->numberOfC = 1;
     } else if (data->runType == 7) {
         data->numberOfT = 3;
-        data->numberOfI = 6;
+        data->numberOfI = 9;
         data->numberOfR = 3;
         data->numberOfC = 3;
     }
@@ -63,11 +63,13 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 0 and 1
     if (data->runType == 0 || data->runType == 1) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->accountRfl, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
@@ -112,12 +114,14 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 2-5
     if (data->runType >= 2 && data->runType <= 5) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->accountRfl, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J1, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
@@ -179,6 +183,7 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 6-7
     if (data->runType >= 6 && data->runType <= 7) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->accountRfl, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
@@ -186,6 +191,7 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J1, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J2, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
@@ -308,30 +314,31 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
 
     // write simulation parameters to file for readout
     fp = fopen(paramInfoFilename, "w");
-    fprintf(fp, "%50s; %d\n", "runtype of the simulation", res->runType);
-    fprintf(fp, "%50s; ", "J (# of spatial elements)");
+    fprintf(fp, "%40s; %d\n", "runtype of the simulation", res->runType);
+    fprintf(fp, "%40s; %d\n", "account for transmission", res->tlType);
+    fprintf(fp, "%40s; ", "J (# of spatial elements)");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");
         fprintf(fp, "%zu", res->J[i]);
     }
-    fprintf(fp, "\n%50s; %zu\n", "N (# of temporal elements)", res->N);
-    fprintf(fp, "%50s; %zu\n", "timeskip factor", res->timeskip);
-    fprintf(fp, "%50s; %zu\n", "electrical / thermal time ratio", res->ETratio);
-    fprintf(fp, "%50s; %zu\n", "# of nanowires", res->numberOfT);
-    fprintf(fp, "%50s; %zu\n", "# of currents", res->numberOfI);
-    fprintf(fp, "%50s; %zu\n", "# of resistances", res->numberOfR);
-    fprintf(fp, "%50s; %zu\n", "# of capacitor voltages", res->numberOfC);
-    fprintf(fp, "%50s; ", "I_b [A]");
+    fprintf(fp, "\n%40s; %zu\n", "N (# of temporal elements)", res->N);
+    fprintf(fp, "%40s; %zu\n", "timeskip factor", res->timeskip);
+    fprintf(fp, "%40s; %zu\n", "electrical / thermal time ratio", res->ETratio);
+    fprintf(fp, "%40s; %zu\n", "# of nanowires", res->numberOfT);
+    fprintf(fp, "%40s; %zu\n", "# of currents", res->numberOfI);
+    fprintf(fp, "%40s; %zu\n", "# of resistances", res->numberOfR);
+    fprintf(fp, "%40s; %zu\n", "# of capacitor voltages", res->numberOfC);
+    fprintf(fp, "%40s; ", "I_b [A]");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");
         fprintf(fp, "%8.6e", res->I_b[i]);
     }
-    fprintf(fp, "\n%50s; ", "dX [m]");
+    fprintf(fp, "\n%40s; ", "dX [m]");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");
         fprintf(fp, "%8.6e", res->dX[i]);
     }
-    fprintf(fp, "\n%50s; %8.6e\n", "dt [s]", res->dt);
+    fprintf(fp, "\n%40s; %8.6e\n", "dt [s]", res->dt);
     fclose(fp);
 
     free(TFilename);

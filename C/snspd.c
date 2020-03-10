@@ -25,7 +25,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     size_t J0, J1, J2;
     // first locally save some important parameters that we will need all the time
     J0 = data->J0;
-    // put J1 to zero to suppress "maybe uninitialized" warning from the gcc compiler
+    // put J1 and J2 to zero to suppress "maybe uninitialized" warning from the gcc compiler
     J1 = 0;
     J2 = 0;
     // ...and overwrite if we actually want to use it
@@ -34,12 +34,17 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     size_t N = data->N;
     size_t NT = data->N/data->timeskip;
     size_t NE = data->N*data->ETratio;
+    size_t NTL = data->NTL;
 
     // create the simulation result struct and allocate sufficient memory
     //   number of time samples N
     //   number of spacial samples J
     SimRes * res = calloc(1, sizeof(SimRes));
     res->runType = data->runType;
+    if (NTL > 0 && data->accountRfl) res->tlType = 1;
+    else if (NTL > 0 && !data->accountRfl) res->tlType = 2;
+    else res->tlType = 0;
+
     res->J = calloc(data->numberOfT, sizeof(size_t));
     res->J[0] = J0;
     if (data->numberOfT > 1) res->J[1] = J1;
@@ -85,7 +90,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
 
     switch(runType) {
         case 0:
-            run_yang(res, data, res->dX[0], res->dt, J0, N, NT, NE);
+            run_yang(res, data, res->dX[0], res->dt, J0, N, NT, NE, NTL);
             break;
         case 1:
             run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NT, NE);

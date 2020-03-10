@@ -5,6 +5,8 @@
 // some global constants
 const double Kb = 1.3806503E-23;      // boltzmann constant
 const double Lorentz = 2.45E-8;       // Lorentz number
+const double C_T = 0.2E-12;          // transmission line capacitors
+const double L_T = 0.5E-9;           // transmission line inductors
 
 // function that frees SimRes struct
 void free_simres(SimRes * res) {

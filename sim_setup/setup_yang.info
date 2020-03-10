@@ -1,8 +1,10 @@
 0; runtype (0: yang, 1: yang parallel)
 1; allow optimization (checks if the wire has cooled to within T_sub_eps, then stops calculation of thermal model)
+1; accountRfl (if 1, account for reflections in the transmission line, increases calculation time sharply. Is disabled altogether when no transmission line is used)
     // general info
 2000; J (number of spatial samples)
 50000; N (number of time samples)
+10; NTL (number of transmission line elements. Choose zero to run sim without transmission line)
 5E-9; tMax (maximum time for thermal model, sim will run from 0 to tMax)
 20; timeskip (factor to reduce timesteps that are used in the calculation, but not shown in the result)
 5; ETratio (ratio between time calculated for the electrical model and thermal model)

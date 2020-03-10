@@ -7,8 +7,9 @@
 #include "types.h"
 #include "helper.h"
 #include "thermal.h"
+#include "transmission.h"
 
-int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, double V_c_n, double X, double Y, double R_w_n, double R_w_np1, double R_L, double R_s, double I_b) {
+int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, double V_c_n, double X, double Y, double R_w_n, double R_w_np1, double R_L, double R_s, double I_b, double I_tl_n) {
     // set up matrix and vector for Ax = b calculation
     lapack_int n, nrhs, info;
     n = 2; nrhs = 1;
@@ -29,7 +30,7 @@ int advance_time_electric_yang(double * I_np1, double * V_c_np1, double I_n, dou
 
     if (info != 0) {
         puts("Error encountered in matrix calculation of electrical model...\nExiting with code 3.");
-        return 3;
+        exit(3);
     }
 
     *I_np1 = b[0];
@@ -53,12 +54,26 @@ int advance_time_electric_basic_yang(double * I_np1, double * V_c_np1, double I_
 }
 
 // main function that runs the simulation
-int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NT, size_t NE) {
+int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NT, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
     double ** T = res->T[0];
     double * I = res->I[0];
     double * R = res->R[0];
     double * V_c = res->V_c[0];
+
+    // set up the currents for the transmission line
+    double * I_tl_prev, * I_tl_curr, * V_c_tl_prev, * V_c_tl_curr, * Itlsum, * Iload, * Itl;
+    I_tl_prev = NULL; I_tl_curr = NULL; V_c_tl_prev = NULL; V_c_tl_curr = NULL;
+    if (NTL > 0) {
+        I_tl_prev = calloc(NTL+1, sizeof(double));
+        I_tl_curr = calloc(NTL+1, sizeof(double));
+        V_c_tl_prev = calloc(NTL, sizeof(double));
+        V_c_tl_curr = calloc(NTL, sizeof(double));
+
+    }
+    Iload = res->I[1];
+    Itlsum = res->I[2];
+    Itl = res->I[3];
 
     // set up vectors to temporarily save the current and next T
     // this saves a lot of memory for larger simulations
@@ -106,7 +121,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
-    printf("DeltaRef: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
+    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
 
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
@@ -125,6 +140,24 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     // set up two characteristic numbers for the electrical calculations
     double X = (2*data->L_w_std)/dt;
     double Y = dt/(2*data->C_m_std);
+    double XT = (2*L_T)/dt;
+    double YT = dt/(2*C_T);
+
+    // set up the transmission matrix
+    double * AT, * AT_tmp, * bT;
+    if (NTL > 0) {
+        if (data->accountRfl) {
+            AT = calloc((2*NTL+1)*(2*NTL+1), sizeof(double));
+            AT_tmp = calloc((2*NTL+1)*(2*NTL+1), sizeof(double));
+            bT = calloc(2*NTL+1, sizeof(double));
+            fill_transmission_matrix_rfl(AT, NTL, XT, YT, data->R_L_std);
+        } else {
+            AT = calloc(2*NTL*2*NTL, sizeof(double));
+            AT_tmp = calloc(2*NTL*2*NTL, sizeof(double));
+            bT = calloc(2*NTL, sizeof(double));
+            fill_transmission_matrix_norfl(AT, NTL, XT, YT, data->R_L_std);
+        }
+    }
 
     // set a flag to check if done
     int flagDone = 0;
@@ -157,11 +190,30 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
         // update the current density through the nanowire
         currentDensity_w = I[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
-        advance_time_electric_yang(&I[n], &V_c[n], I[n-1], V_c[n-1], X, Y, R[n-1], R[n], data->R_L_std, data->R_s_std, v_I);
+        advance_time_electric_yang(&I[n], &V_c[n], I[n-1], V_c[n-1], X, Y, R[n-1], R[n], data->R_L_std, data->R_s_std, v_I, Itl[n-1]);
+        // update the transmission line
+        if (NTL > 0) {
+            double R_r = data->R_L_std*(v_I/I[n] - 1);
+            I_tl_prev[0] = I[n];
+
+            //printf("prev up front:\n%4.2e\n", I_tl_prev[0]);
+            //for (unsigned j=0; j<NTL; j++) {
+            //    printf("%4.2e %4.2e\n", I_tl_prev[j+1], V_c_tl_prev[j]);
+            //}
+            advance_time_transmission_rfl(I_tl_curr, V_c_tl_curr, I_tl_prev, V_c_tl_prev, AT_tmp, AT, bT, NTL, XT, YT, data->R_L_std, R_r, v_I);
+            Iload[n] = I_tl_curr[NTL];
+            Itlsum[n] = subsum_vector(I_tl_curr, 1, NTL);
+            Itl[n] = Itl[n-1] + I_tl_curr[0] - I_tl_prev[0]; // TODO: look at this formula!
+        }
+
+        //printf("prev after trns:\n%4.2e\n", I_tl_prev[0]);
+        //for (unsigned j=0; j<NTL; j++) {
+        //    printf("%4.2e %4.2e\n", I_tl_prev[j+1], V_c_tl_prev[j]);
+        //}
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T_prev = T_curr;
-        if (n % data->timeskip == 0)
+        if (n % data->timeskip == 0 && n < N)
             T_curr = T[n/data->timeskip];
         else {
             if (T_prev == T_stash_1)
@@ -169,6 +221,14 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
             else
                 T_curr = T_stash_1;
         }
+
+        // shuffle the transmission currents around for the next timestep
+        swap_ptr(&I_tl_prev, &I_tl_curr);
+        //printf("prev after swap:\n%4.2e\n", I_tl_prev[0]);
+        //for (unsigned j=0; j<NTL; j++) {
+        //    printf("%4.2e %4.2e\n", I_tl_prev[j+1], V_c_tl_prev[j]);
+        //}
+        swap_ptr(&V_c_tl_prev, &V_c_tl_curr);
     }
 
     // free allocated space
@@ -179,6 +239,16 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     free(c_n);
     free(rho_seg_n);
     free(R_seg_n);
+
+    if (NTL > 0) {
+        free(I_tl_prev);
+        free(I_tl_curr);
+        free(V_c_tl_prev);
+        free(V_c_tl_curr);
+        free(AT);
+        free(AT_tmp);
+        free(bT);
+    }
 
     // print result
     puts("\nSimulation completed.");

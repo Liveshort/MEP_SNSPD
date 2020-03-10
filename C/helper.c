@@ -38,6 +38,15 @@ double sum_vector(double * vec, size_t J) {
     return sum;
 }
 
+double subsum_vector(double * vec, size_t i, size_t j) {
+    double subsum = 0;
+
+    for (unsigned k=i; k<j; ++k)
+        subsum += vec[k];
+
+    return subsum;
+}
+
 int cmp_vector(double * vec, size_t J, double val, double eps) {
     for (unsigned j=0; j<J; ++j)
         if (abs(vec[j] - val) > eps) return 1;
@@ -50,6 +59,14 @@ int fill_vector(double * vec, size_t J, double val) {
         vec[j] = val;
 
     return 0;
+}
+
+void swap_ptr(double ** one, double ** two) {
+    double * tmp = *one;
+    *one = *two;
+    *two = tmp;
+
+    return;
 }
 
 // print progress
