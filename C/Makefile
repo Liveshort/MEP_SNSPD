@@ -3,7 +3,7 @@ FC     = gfortran
 CFLAGS = -I -Wall -Wextra
 
 DEPDIR = include
-DEPDIR2= include_lapack
+DEPDIR2= include_bls
 ODIR   = obj
 LIBDIR = lib
 
@@ -13,10 +13,11 @@ DEPS   = $(patsubst %,$(DEPDIR)/%,$(_DEPS))
 _OBJ   = types.o linalg.o helper.o transmission.o thermal.o yang.o yang_par.o waterfall_2s_res.o waterfall_3s_res.o snspd.o simulation.o
 OBJ    = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
+CBLSLB = $(LIBDIR)/libcblas.a
 BLSLB  = $(LIBDIR)/librefblas.a
 LPKLB  = $(LIBDIR)/liblapack.a
 LPKELB = $(LIBDIR)/liblapacke.a
-LIBS   = -lm $(LPKELB) $(LPKLB) $(BLSLB)
+LIBS   = -lm $(LPKELB) $(LPKLB) $(BLSLB) $(CBLSLB)
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -g -I $(DEPDIR) -I $(DEPDIR2) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)

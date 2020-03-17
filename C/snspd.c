@@ -41,8 +41,8 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     //   number of spacial samples J
     SimRes * res = calloc(1, sizeof(SimRes));
     res->runType = data->runType;
-    if (NTL > 0 && data->accountRfl) res->tlType = 1;
-    else if (NTL > 0 && !data->accountRfl) res->tlType = 2;
+    if (NTL > 0 && data->simTL) res->tlType = 1;
+    else if (NTL > 0 && !data->simTL) res->tlType = 2;
     else res->tlType = 0;
 
     res->J = calloc(data->numberOfT, sizeof(size_t));

@@ -63,16 +63,18 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 0 and 1
     if (data->runType == 0 || data->runType == 1) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
-        if (fscanf(fp, "%d;%2000[^\n]\n", &data->accountRfl, dump) < 1) exit(6);
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->simTL, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->VF, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->LTL, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
@@ -114,17 +116,19 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 2-5
     if (data->runType >= 2 && data->runType <= 5) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
-        if (fscanf(fp, "%d;%2000[^\n]\n", &data->accountRfl, dump) < 1) exit(6);
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->simTL, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J0, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J1, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->VF, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->LTL, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
@@ -183,7 +187,7 @@ int collect_data(FILE * fp, SimData * data) {
     // scan data runtype 6-7
     if (data->runType >= 6 && data->runType <= 7) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
-        if (fscanf(fp, "%d;%2000[^\n]\n", &data->accountRfl, dump) < 1) exit(6);
+        if (fscanf(fp, "%d;%2000[^\n]\n", &data->simTL, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
@@ -191,10 +195,12 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J1, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->J2, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->N, dump) < 1) exit(6);
-        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+        if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->VF, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->LTL, dump) < 1) exit(6);
 
         if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
 
