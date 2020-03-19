@@ -1,6 +1,6 @@
 0; runtype (0: yang, 1: yang parallel)
 1; allow optimization (checks if the wire has cooled to within T_sub_eps, then stops calculation of thermal model)
-2; simulate transmission (if 1, treats transmission line as a pure delay, fast, but not very accurate. If 2, calculates a non-feedback (no reflections) transmission line response with NTL segments)
+3; simulate transmission (if 1, treats transmission line as a pure delay, fast, but not very accurate. If 2, calculates a non-feedback (no reflections) transmission line response with NTL segments)
     // general info
 2000; J (number of spatial samples)
 50000; N (number of time samples)

@@ -3,7 +3,13 @@ FC     = gfortran
 CFLAGS = -I -Wall -Wextra
 
 DEPDIR = include
-DEPDIR2= include_bls
+
+ifdef USE_OPENBLAS
+DEPDIR2= include_opnbls
+else
+DEPDIR2= include_netlib
+endif
+
 ODIR   = obj
 LIBDIR = lib
 
@@ -17,7 +23,14 @@ CBLSLB = $(LIBDIR)/libcblas.a
 BLSLB  = $(LIBDIR)/librefblas.a
 LPKLB  = $(LIBDIR)/liblapack.a
 LPKELB = $(LIBDIR)/liblapacke.a
+
+OPNBLS = $(LIBDIR)/libopenblas.a
+
+ifdef USE_OPENBLAS
+LIBS   = $(OPNBLS) -lm -lpthread
+else
 LIBS   = -lm $(LPKELB) $(LPKLB) $(BLSLB) $(CBLSLB)
+endif
 
 $(ODIR)/%.o: %.c $(DEPS)
 	$(CC) -g -I $(DEPDIR) -I $(DEPDIR2) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)

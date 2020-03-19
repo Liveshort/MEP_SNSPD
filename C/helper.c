@@ -61,14 +61,6 @@ int fill_vector(double * vec, size_t J, double val) {
     return 0;
 }
 
-void swap_ptr(double ** one, double ** two) {
-    double * tmp = *one;
-    *one = *two;
-    *two = tmp;
-
-    return;
-}
-
 // print progress
 void print_progress(unsigned n, size_t N) {
     if ((n+1) % (N/100) == 0) {
