@@ -81,6 +81,7 @@ if runtype == 1:
 plt.xlabel("t (ns)")
 plt.ylabel("I ($\mu$A)")
 plt.legend(["I0 (detector)", "Iload", "Itlsum", "Itl"], loc="upper center")
+plt.ylim([0, 20])
 plt.show(block=False)
 
 plt.figure()

@@ -3,21 +3,8 @@ FC     = gfortran
 CFLAGS = -I -Wall -Wextra
 
 DEPDIR = include
-
-ifdef USE_OPENBLAS
-DEPDIR2= include_opnbls
-else
-DEPDIR2= include_netlib
-endif
-
-ODIR   = obj
+OBJDIR = obj
 LIBDIR = lib
-
-_DEPS  = snspd.h thermal.h helper.h transmission.h yang.h yang_par.h waterfall_2s_res.h waterfall_3s_res.h types.h linalg.h
-DEPS   = $(patsubst %,$(DEPDIR)/%,$(_DEPS))
-
-_OBJ   = types.o linalg.o helper.o transmission.o thermal.o yang.o yang_par.o waterfall_2s_res.o waterfall_3s_res.o snspd.o simulation.o
-OBJ    = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 CBLSLB = $(LIBDIR)/libcblas.a
 BLSLB  = $(LIBDIR)/librefblas.a
@@ -26,14 +13,22 @@ LPKELB = $(LIBDIR)/liblapacke.a
 
 OPNBLS = $(LIBDIR)/libopenblas.a
 
-ifdef USE_OPENBLAS
+ifneq ("$(wildcard $(OPNBLS))","")
+BLSDIR = include_openblas
 LIBS   = $(OPNBLS) -lm -lpthread
 else
+BLSDIR = include_netlib
 LIBS   = -lm $(LPKELB) $(LPKLB) $(BLSLB) $(CBLSLB)
 endif
 
-$(ODIR)/%.o: %.c $(DEPS)
-	$(CC) -g -I $(DEPDIR) -I $(DEPDIR2) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)
+_DEPS  = snspd.h thermal.h helper.h transmission.h yang.h yang_par.h waterfall_2s_res.h waterfall_3s_res.h types.h linalg.h
+DEPS   = $(patsubst %,$(DEPDIR)/%,$(_DEPS))
+
+_OBJ   = types.o linalg.o helper.o transmission.o thermal.o yang.o yang_par.o waterfall_2s_res.o waterfall_3s_res.o snspd.o simulation.o
+OBJ    = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
+
+$(OBJDIR)/%.o: %.c $(DEPS)
+	$(CC) -g -I $(DEPDIR) -I $(BLSDIR) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)
 
 all: simulation
 
@@ -46,4 +41,4 @@ run:
 .PHONY: clean all run
 
 clean:
-	rm -f $(ODIR)/*.o bld/snspd bld/snspd.so bld/simulation
+	rm -f $(OBJDIR)/*.o bld/snspd bld/snspd.so bld/simulation

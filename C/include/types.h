@@ -5,6 +5,8 @@
 const double Kb;            // boltzmann constant
 const double Lorentz;       // Lorentz number
 
+enum transmissionType{NOTRNS, DELAYTRNS, VARRPLCTRNS, CONSTRPLCTRNS, NORPLCTRNS};
+
 // structure that contains the result of the simulation of an snspd
 typedef struct _simres {
     int runType;            // runtype of the simulation (0: yang, 1: yang_parallel)
