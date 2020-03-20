@@ -46,9 +46,9 @@ make
 cd ../CBLAS
 make
 ```
-* Five `lib[***].a` files will have appeared in your LAPACK folder, copy those to the empty C/lib folder in the copy of the git repo on your PC.
+* Five `lib[***].a` files will have appeared in your LAPACK folder, copy those to the empty C/lib folder in the copy of the git repo on your PC. Header files should already be included, but if need be, you can copy over your own generated files from the LAPACKE/include and CBLAS/include folders into the C/include_netlib folder. Note that the header files have been changed slightly (all references to complex.h have been commented out) due to a conflict of the variable name `I`. This should not bother you if you just use the supplied `.h` files.
 ## Running the simulation (Linux)
-* Open a terminal, move into the C folder and run the following command to run a simulation (OpenBLAS or Netlib will be selected automatically):
+* Open a terminal, move into the C folder and run the following command to run a simulation (OpenBLAS or Netlib LAPACK will be selected automatically):
 ```bash
 make all && time make run args="../sim_setup/setup_yang.info ../sim_results/"
 ```
