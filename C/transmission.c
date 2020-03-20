@@ -136,12 +136,12 @@ int fill_transmission_matrix_noRr(double * A, size_t NTL, double XT, double YT, 
         A[(NTL+i)*rl + NTL+i] = 1;
     }
 
-    for (unsigned i=0; i<rl; i++) {
-        for (unsigned j=0; j<rl; j++) {
-            printf("%6.1f ", A[rl*i + j]);
-        }
-        puts("");
-    }
+    //for (unsigned i=0; i<rl; i++) {
+    //    for (unsigned j=0; j<rl; j++) {
+    //        printf("%6.1f ", A[rl*i + j]);
+    //    }
+    //    puts("");
+    //}
 
     // set up matrix and vector for matrix inversion (matrix is static, yay!)
     lapack_int info;
@@ -161,12 +161,12 @@ int fill_transmission_matrix_noRr(double * A, size_t NTL, double XT, double YT, 
         exit(7);
     }
 
-    for (unsigned i=0; i<rl; i++) {
-        for (unsigned j=0; j<rl; j++) {
-            printf("%8.1g ", A[rl*i + j]);
-        }
-        puts("");
-    }
+    //for (unsigned i=0; i<rl; i++) {
+    //    for (unsigned j=0; j<rl; j++) {
+    //        printf("%8.1g ", A[rl*i + j]);
+    //    }
+    //    puts("");
+    //}
 
     return 0;
 }
@@ -286,7 +286,7 @@ int advance_time_transmission_noRr(double * I_tl_np1, double * V_c_tl_np1, doubl
     b[NTL-1] = -V_c_tl_n[NTL-1] + 2*I_b_tl_np1*R_L - sum_vector(I_tl_n, NTL)*R_L;
 
     for (unsigned i=0; i<NTL; i++)
-        b[NTL + i] = V_c_tl_n[i] + YT*I_tl_n[i+1];
+        b[NTL + i] = V_c_tl_n[i] + YT*I_tl_n[i];
 
     //printf("%4.2e\n", I_b_tl);
 

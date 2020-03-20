@@ -37,14 +37,8 @@ cp make.inc.example make.inc
 # increase the stack size during compilation of the LAPACK.
 # it will probably compile without this command, but the test suite will not run.
 ulimit -s unlimited
-# make BLAS and LAPACK
-make all
-# move into LAPACKE folder and make that too
-cd LAPACKE
-make
-# move into CBLAS folder and make that too
-cd ../CBLAS
-make
+# make BLAS, CBLAS, LAPACK and LAPACKE
+make all cblaslib lapackelib
 ```
 * Five `lib[***].a` files will have appeared in your LAPACK folder, copy those to the empty C/lib folder in the copy of the git repo on your PC. Header files should already be included, but if need be, you can copy over your own generated files from the LAPACKE/include and CBLAS/include folders into the C/include_netlib folder. Note that the header files have been changed slightly (all references to complex.h have been commented out) due to a conflict of the variable name `I`. This should not bother you if you just use the supplied `.h` files.
 ## Running the simulation (Linux)
