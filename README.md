@@ -12,7 +12,7 @@ git clone git@github.com:Liveshort/MEP_SNSPD.git
 ```bash
 pip3 install numpy matplotlib
 ```
-* Download either the current OpenBLAS library from https://github.com/xianyi/OpenBLAS (recommeded, because it is much more optimized and runs multicore) [Follow the steps below 1.] **OR** the current LAPACK version (version 3.9.0 was used at the time of writing) from http://www.netlib.org/lapack/ [Follow the steps below 2.].
+* Download either the current OpenBLAS library from https://github.com/xianyi/OpenBLAS (recommeded, because it is much more optimized and runs multicore) [Skip the Netlib LAPACK section] **OR** the current LAPACK version (version 3.9.0 was used at the time of writing) from http://www.netlib.org/lapack/ [Skip the next section].
 ### ...using OpenBLAS (recommended)
 * Clone the git repository of OpenBLAS somewhere on your system by opening a terminal, `cd`-ing into a folder of your liking and running the following commands:
 ```bash
