@@ -60,7 +60,6 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     double * I = res->I[0];
     double * R = res->R[0];
     double * V_c = res->V_c[0];
-
     double * Iload = res->I[1];
 
     // set up vectors to temporarily save the current and next T

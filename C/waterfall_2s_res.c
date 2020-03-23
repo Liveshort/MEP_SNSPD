@@ -7,6 +7,7 @@
 #include "types.h"
 #include "helper.h"
 #include "thermal.h"
+#include "transmission.h"
 
 // advances the electric model one timestep using BLAS matrix algebra.
 // you need the LAPACK for this, or work out the matrix logic on your own (not recommended)
@@ -124,7 +125,7 @@ int calculate_bias_from_target_currents_wtf_2s(double * v_I_b0, double * v_I_b1,
 }
 
 // main function that runs the simulation
-int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, double dt, size_t J0, size_t J1, size_t N, size_t NT, size_t NE) {
+int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, double dt, size_t J0, size_t J1, size_t N, size_t NT, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
     double ** T0 = res->T[0];
     double ** T1 = res->T[1];
@@ -135,6 +136,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     double * R0 = res->R[0];
     double * R1 = res->R[1];
     double * V_c = res->V_c[0];
+    double * Iload = res->I[4];
 
     // set up vectors to temporarily save the current and next T
     // this saves a lot of memory for larger simulations
@@ -174,7 +176,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         v_I_b1 = data->I_b1_wtf;
     }
     printf("bias currents %4.2e %4.2e\n", v_I_b0, v_I_b1);
-    
+
     // determine initial conditions
     double R_v0 = data->R_p0_wtf*data->R_s0_wtf/(data->R_p0_wtf + data->R_s0_wtf);
     double R_v1 = data->R_p1_wtf*data->R_s1_wtf/(data->R_p1_wtf + data->R_s1_wtf);
@@ -289,6 +291,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         currentDensity_w1 = I2[n-1]/(data->wireWidth_1*data->wireThickness_1);
         // update the electric values
         advance_time_electric_wtf_2s(&I0[n], &I1[n], &I2[n], &I3[n], &V_c[n], I0[n-1], I1[n-1], I2[n-1], I3[n-1], V_c[n-1], XW0, XP0, XW1, XP1, XM, Y, R0[n-1], R0[n], R1[n-1], R1[n], data->R_L_wtf, data->R_01_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_p0_wtf, data->R_p1_wtf, v_I_b0, v_I_b1);
+        Iload[n] = v_I_b0 + v_I_b1 - I0[n] - I1[n] - I2[n] - I3[n];
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;
@@ -326,6 +329,10 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     free(c1_n);
     free(rho_seg1_n);
     free(R_seg1_n);
+
+    // transmission line loop
+    if (data->simTL)
+        sim_transmission_line(data, res, NE, NTL, 1);
 
     // print result
     puts("\nSimulation completed.");

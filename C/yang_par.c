@@ -7,6 +7,7 @@
 #include "types.h"
 #include "helper.h"
 #include "thermal.h"
+#include "transmission.h"
 
 int advance_time_electric_yang_parallel(double * I0_np1, double * I1_np1, double * V_c_np1, double I0_n, double I1_n, double V_c_n, double X1, double X2, double Y, double R_w_n, double R_w_np1, double R_p, double R_L, double R_s, double I_b) {
     // set up matrix and vector for Ax = b calculation
@@ -52,13 +53,14 @@ int advance_time_electric_yang_parallel(double * I0_np1, double * I1_np1, double
 }
 
 // main function that runs the simulation
-int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NT, size_t NE) {
+int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NT, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
     double ** T = res->T[0];
     double * I0 = res->I[0];
     double * I1 = res->I[1];
     double * R = res->R[0];
     double * V_c = res->V_c[0];
+    double * Iload = res->I[2];
 
     // set up vectors to temporarily save the current and next T
     // this saves a lot of memory for larger simulations
@@ -166,6 +168,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
         currentDensity_w = I0[n-1]/(data->wireWidth*data->wireThickness);
         // update the electric values
         advance_time_electric_yang_parallel(&I0[n], &I1[n], &V_c[n], I0[n-1], I1[n-1], V_c[n-1], X1, X2, Y, R[n-1], R[n], data->R_p_parallel, data->R_L_std, data->R_s_std, v_I0 + v_I1);
+        Iload[n] = v_I0 + v_I1 - I0[n] - I1[n];
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T_prev = T_curr;
@@ -187,6 +190,10 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
     free(c_n);
     free(rho_seg_n);
     free(R_seg_n);
+
+    // transmission line loop
+    if (data->simTL)
+        sim_transmission_line(data, res, NE, NTL, 1);
 
     // print result
     puts("\nSimulation completed.");

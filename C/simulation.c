@@ -236,6 +236,7 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_01_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_12_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_01_wtf, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_12_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->C_m_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b0_wtf, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->I_b1_wtf, dump) < 1) exit(6);
@@ -321,7 +322,7 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     // write simulation parameters to file for readout
     fp = fopen(paramInfoFilename, "w");
     fprintf(fp, "%40s; %d\n", "runtype of the simulation", res->runType);
-    fprintf(fp, "%40s; %d\n", "account for transmission", res->tlType);
+    fprintf(fp, "%40s; %d\n", "transmission simulation type", res->tlType);
     fprintf(fp, "%40s; ", "J (# of spatial elements)");
     for (unsigned i=0; i<res->numberOfT; ++i) {
         if (i > 0) fprintf(fp, "; ");

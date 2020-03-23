@@ -92,6 +92,7 @@ typedef struct _simdata {
     double R_01_wtf;        // resistor between stage 0 and 1
     double R_12_wtf;        // resistor between stage 1 and 2
     double C_01_wtf;        // capacitor between stage 0 and 1
+    double C_12_wtf;        // capacitor between stage 1 and 2
     double C_m_wtf;         // dc port bias tee
     double I_b0_wtf;        // bias current
     double I_b1_wtf;        // bias current

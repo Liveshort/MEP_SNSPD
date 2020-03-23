@@ -7,6 +7,7 @@
 #include "types.h"
 #include "helper.h"
 #include "thermal.h"
+#include "transmission.h"
 
 // advances the electric model one timestep using BLAS matrix algebra.
 // you need the LAPACK for this, or work out the matrix logic on your own (not recommended)
@@ -205,7 +206,7 @@ int calculate_initial_currents_wtf_3s(double v_I_b0, double v_I_b1, double v_I_b
 }
 
 // main function that runs the simulation
-int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, double dX2, double dt, size_t J0, size_t J1, size_t J2, size_t N, size_t NT, size_t NE) {
+int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, double dX2, double dt, size_t J0, size_t J1, size_t J2, size_t N, size_t NT, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
     double ** T0 = res->T[0];
     double ** T1 = res->T[1];
@@ -220,6 +221,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     double * R1 = res->R[1];
     double * R2 = res->R[2];
     double * V_c = res->V_c[0];
+    double * Iload = res->I[6];
 
     // set up vectors to temporarily save the current and next T
     // this saves a lot of memory for larger simulations
@@ -389,6 +391,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         currentDensity_w2 = I4[n-1]/(data->wireWidth_2*data->wireThickness_2);
         // update the electric values
         advance_time_electric_wtf_3s(&I0[n], &I1[n], &I2[n], &I3[n], &I4[n], &I5[n], &V_c[n], I0[n-1], I1[n-1], I2[n-1], I3[n-1], I4[n-1], I5[n-1], V_c[n-1], XW0, XP0, XW1, XP1, XW2, XP2, X12, XM, Y, R0[n-1], R0[n], R1[n-1], R1[n], R2[n-1], R2[n], data->R_L_wtf, data->R_01_wtf, data->R_12_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_s2_wtf, data->R_p0_wtf, data->R_p1_wtf, data->R_p2_wtf, v_I_b0, v_I_b1, v_I_b2);
+        Iload[n] = v_I_b0 + v_I_b1 + v_I_b2 - I0[n] - I1[n] - I2[n] - I3[n] - I4[n] - I5[n];
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
         T0_prev = T0_curr;
@@ -441,6 +444,10 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     free(c2_n);
     free(rho_seg2_n);
     free(R_seg2_n);
+
+    // transmission line loop
+    if (data->simTL)
+        sim_transmission_line(data, res, NE, NTL, 3);
 
     // print result
     puts("\nSimulation completed.");

@@ -93,13 +93,13 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
             run_yang(res, data, res->dX[0], res->dt, J0, N, NT, NE, NTL);
             break;
         case 1:
-            run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NT, NE);
+            run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NT, NE, NTL);
             break;
         case 4:
-            run_waterfall_2s_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE);
+            run_waterfall_2s_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE, NTL);
             break;
         case 6:
-            run_waterfall_3s_res(res, data, res->dX[0], res->dX[1], res->dX[2], res->dt, J0, J1, J2, N, NT, NE);
+            run_waterfall_3s_res(res, data, res->dX[0], res->dX[1], res->dX[2], res->dt, J0, J1, J2, N, NT, NE, NTL);
             break;
         default:
             printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
