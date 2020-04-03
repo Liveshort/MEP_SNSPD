@@ -10,7 +10,7 @@ enum transmissionType{NOTRNS, DELAYTRNS, VARRPLCTRNS, CONSTRPLCTRNS, NORPLCTRNS}
 // structure that contains the result of the simulation of an snspd
 typedef struct _simres {
     int runType;            // runtype of the simulation (0: yang, 1: yang_parallel)
-    int tlType;             // account for transmission (0: no, 1: rfl, 2: norfl)
+    int tlType;             // account for transmission (0: no, 1: delay, 2: nofdb, 3: nofdb xpl mat, 4: nofdb direct)
     size_t * J;             // number of spatial samples
     size_t N;               // number of time samples
     double * dX;            // delta X

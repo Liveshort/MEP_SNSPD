@@ -206,48 +206,53 @@ int calculate_initial_currents_wtf_3s(double v_I_b0, double v_I_b1, double v_I_b
 }
 
 // main function that runs the simulation
-int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, double dX2, double dt, size_t J0, size_t J1, size_t J2, size_t N, size_t NT, size_t NE, size_t NTL) {
+int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, size_t * J, size_t N, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
-    double ** T0 = res->T[0];
-    double ** T1 = res->T[1];
-    double ** T2 = res->T[2];
-    double * I0 = res->I[0];
-    double * I1 = res->I[1];
-    double * I2 = res->I[2];
-    double * I3 = res->I[3];
-    double * I4 = res->I[4];
-    double * I5 = res->I[5];
-    double * R0 = res->R[0];
-    double * R1 = res->R[1];
-    double * R2 = res->R[2];
+    double *** T = calloc(data->numberOfT, sizeof(double **));
+    for (unsigned j=0; j<data->numberOfT; ++j)
+        T[j] = res->T[j];
+
+    double ** I = calloc(data->numberOfI, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfI; ++j)
+        I[j] = res->I[j];
+
+    double ** R = calloc(data->numberOfR, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfR; ++j)
+        R[j] = res->R[j];
+
     double * V_c = res->V_c[0];
     double * Iload = res->I[6];
 
+    double * wireWidth = calloc(data->numberOfT, sizeof(double));
+    wireWidth[0] = data->wireWidth;
+    wireWidth[1] = data->wireWidth_1;
+    wireWidth[2] = data->wireWidth_2;
+
+    double * wireThickness = calloc(data->numberOfT, sizeof(double));
+    wireThickness[0] = data->wireThickness;
+    wireThickness[1] = data->wireThickness_1;
+    wireThickness[2] = data->wireThickness_2;
+
     // set up vectors to temporarily save the current and next T
     // this saves a lot of memory for larger simulations
-    double * T_stash_1 = calloc(J0, sizeof(double));
-    double * T_stash_2 = calloc(J0, sizeof(double));
-    double * T_stash_3 = calloc(J1, sizeof(double));
-    double * T_stash_4 = calloc(J1, sizeof(double));
-    double * T_stash_5 = calloc(J2, sizeof(double));
-    double * T_stash_6 = calloc(J2, sizeof(double));
-    double * T0_prev = T0[0];
-    double * T0_curr = T0[1];
-    double * T1_prev = T1[0];
-    double * T1_curr = T1[1];
-    double * T2_prev = T2[0];
-    double * T2_curr = T2[1];
+    double ** T_stash = calloc(2*data->numberOfT, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfT; ++j) {
+        T_stash[2*j] = calloc(J[j], sizeof(double));
+        T_stash[2*j+1] = calloc(J[j], sizeof(double));
+    }
+    double ** T_prev = calloc(data->numberOfT, sizeof(double *));
+    double ** T_curr = calloc(data->numberOfT, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfT; ++j) {
+        T_prev[j] = T[j][0];
+        T_curr[j] = T[j][1];
+        // set up initial thermal values at t = 1, add a steady state time step at t = 0
+        fill_vector(T_prev[j], J[j], data->T_sub);
+        fill_vector(T_curr[j], J[j], data->T_sub);
+    }
 
-    // set up initial thermal values at t = 1, add a steady state time step at t = 0
-    fill_vector(T0_prev, J0, data->T_sub);
-    fill_vector(T0_curr, J0, data->T_sub);
-    fill_vector(T1_prev, J1, data->T_sub);
-    fill_vector(T1_curr, J1, data->T_sub);
-    fill_vector(T2_prev, J2, data->T_sub);
-    fill_vector(T2_curr, J2, data->T_sub);
     // determine halfway point and set up a beginning hotspot at t = 1
-    unsigned halfway = J0/2;
-    unsigned initHS_segs = (unsigned) (data->initHS_l_wtf/dX0) + 1;
+    unsigned halfway = J[0]/2;
+    unsigned initHS_segs = (unsigned) (data->initHS_l_wtf/dX[0]) + 1;
     // check if there is a nonzero number of segments
     if (initHS_segs < 2) {
         puts("Number of segments in initial hot-spot smaller than 2.\nReturning empty result with error code 2 (wrong initial hot-spot size)...");
@@ -255,7 +260,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         return 2;
     }
     for (unsigned j=halfway - initHS_segs/2; j<halfway + initHS_segs/2; ++j) {
-        T0_curr[j] = data->initHS_T_wtf;
+        T_curr[0][j] = data->initHS_T_wtf;
     }
 
     // calculate the correct bias current
@@ -278,17 +283,17 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     calculate_initial_currents_wtf_3s(v_I_b0, v_I_b1, v_I_b2, &v_I_t0, &v_I_t1, &v_I_t2, &v_I_t3, &v_I_t4, &v_I_t5, data->R_s0_wtf, data->R_s1_wtf, data->R_s2_wtf, data->R_p0_wtf, data->R_p1_wtf, data->R_p2_wtf, data->R_01_wtf, data->R_12_wtf);
     for (unsigned n=0; n<=data->timeskip; ++n) {
         // set up initial current through the snspd in steady state (t = 0)
-        I0[n] = v_I_t0;
-        I1[n] = v_I_t1;
-        I2[n] = v_I_t2;
-        I3[n] = v_I_t3;
-        I4[n] = v_I_t4;
-        I5[n] = v_I_t5;
+        I[0][n] = v_I_t0;
+        I[1][n] = v_I_t1;
+        I[2][n] = v_I_t2;
+        I[3][n] = v_I_t3;
+        I[4][n] = v_I_t4;
+        I[5][n] = v_I_t5;
         // set up initial voltage drop over the capacitor
         V_c[n] = (v_I_t4+v_I_t5)*data->R_p2_wtf*data->R_s2_wtf/(data->R_p2_wtf + data->R_s2_wtf);
     }
     // print initial currents
-    printf("initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n", I0[0], I1[0], I2[0], I3[0], I4[0], I5[0]);
+    printf("initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n", I[0][0], I[1][0], I[2][0], I[3][0], I[4][0], I[5][0]);
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -301,40 +306,33 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
 
     // determine surface ratio between the cross sections of the wires
-    double surfaceRatio10 = data->wireThickness_1*data->wireWidth_1/data->wireThickness/data->wireWidth;
-    double surfaceRatio21 = data->wireThickness_2*data->wireWidth_2/data->wireThickness/data->wireWidth;
+    double surfaceRatio10 = wireThickness[1]*wireWidth[1]/wireThickness[0]/wireWidth[0];
+    double surfaceRatio21 = wireThickness[2]*wireWidth[2]/wireThickness[0]/wireWidth[0];
     // define the resistance of a segment of wire in the normal state
-    double R_seg0 = data->rho_norm_wtf*dX0/(data->wireWidth*data->wireThickness);
-    double R_seg1 = data->rho_norm_wtf/surfaceRatio10*dX1/(data->wireWidth*data->wireThickness);
-    double R_seg2 = data->rho_norm_wtf/surfaceRatio21*dX2/(data->wireWidth*data->wireThickness);
+    double * R_seg = calloc(data->numberOfT, sizeof(double));
+    for (unsigned j=0; j<data->numberOfT; j++)
+        R_seg[j] = data->rho_norm_wtf*dX[j]/(wireWidth[j]*wireThickness[j]);
     // declare the nanowire resistance and current density
-    for (unsigned n=0; n<=data->timeskip; ++n) {
-        R0[n] = 0;
-        R1[n] = 0;
-        R2[n] = 0;
-    }
-    double currentDensity_w0 = 0;
-    double currentDensity_w1 = 0;
-    double currentDensity_w2 = 0;
+    for (unsigned n=0; n<=data->timeskip; ++n)
+        for (unsigned j=0; j<data->numberOfR; ++j)
+            R[j][n] = 0;
+    double * currentDensity_w = calloc(data->numberOfT, sizeof(double));
+    for (unsigned j=0; j<data->numberOfT; ++j)
+        currentDensity_w[j] = 0;
 
     // allocate space for the state and temperature dependent variables for each time step
-    double * alpha0_n = calloc(J0, sizeof(double));
-    double * kappa0_n = calloc(J0, sizeof(double));
-    double * c0_n = calloc(J0, sizeof(double));
-    double * rho_seg0_n = calloc(J0, sizeof(double));
-    double * R_seg0_n = calloc(J0, sizeof(double));
-
-    double * alpha1_n = calloc(J1, sizeof(double));
-    double * kappa1_n = calloc(J1, sizeof(double));
-    double * c1_n = calloc(J1, sizeof(double));
-    double * rho_seg1_n = calloc(J1, sizeof(double));
-    double * R_seg1_n = calloc(J1, sizeof(double));
-
-    double * alpha2_n = calloc(J2, sizeof(double));
-    double * kappa2_n = calloc(J2, sizeof(double));
-    double * c2_n = calloc(J2, sizeof(double));
-    double * rho_seg2_n = calloc(J2, sizeof(double));
-    double * R_seg2_n = calloc(J2, sizeof(double));
+    double ** alpha_n = calloc(data->numberOfT, sizeof(double *));
+    double ** kappa_n = calloc(data->numberOfT, sizeof(double *));
+    double ** c_n = calloc(data->numberOfT, sizeof(double *));
+    double ** rho_seg_n = calloc(data->numberOfT, sizeof(double *));
+    double ** R_seg_n = calloc(data->numberOfT, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfT; ++j) {
+        alpha_n[j] = calloc(J[j], sizeof(double));
+        kappa_n[j] = calloc(J[j], sizeof(double));
+        c_n[j] = calloc(J[j], sizeof(double));
+        rho_seg_n[j] = calloc(J[j], sizeof(double));
+        R_seg_n[j] = calloc(J[j], sizeof(double));
+    }
 
     // set up two characteristic numbers for the electrical calculations
     double XW0 = (2*data->L_w0_wtf)/dt;
@@ -357,14 +355,12 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
 
         // advance the thermal model to the next time step after the initial step
         if (n > data->timeskip+1 && n < N) {
-            if (!data->allowOpt || cmp_vector(T0_prev, J0, data->T_sub, data->T_sub_eps) || cmp_vector(T1_prev, J1, data->T_sub, data->T_sub_eps) || cmp_vector(T2_prev, J2, data->T_sub, data->T_sub_eps)) {
-                advance_time_thermal(T0_prev, T0_curr, J0, data->T_sub, alpha0_n, c0_n, rho_seg0_n, kappa0_n, data->wireThickness, currentDensity_w0, dt, dX0);
-                advance_time_thermal(T1_prev, T1_curr, J1, data->T_sub, alpha1_n, c1_n, rho_seg1_n, kappa1_n, data->wireThickness_1, currentDensity_w1, dt, dX1);
-                advance_time_thermal(T2_prev, T2_curr, J2, data->T_sub, alpha2_n, c2_n, rho_seg2_n, kappa2_n, data->wireThickness_2, currentDensity_w2, dt, dX2);
-            } else {
-                fill_vector(T0_curr, J0, data->T_sub);
-                fill_vector(T1_curr, J1, data->T_sub);
-                fill_vector(T2_curr, J2, data->T_sub);
+            if (!data->allowOpt || cmp_vector(T_prev[0], J[0], data->T_sub, data->T_sub_eps) || cmp_vector(T_prev[1], J[1], data->T_sub, data->T_sub_eps) || cmp_vector(T_prev[2], J[2], data->T_sub, data->T_sub_eps))
+                for (unsigned j=0; j<data->numberOfT; ++j)
+                    advance_time_thermal(T_prev[j], T_curr[j], J[j], data->T_sub, alpha_n[j], c_n[j], rho_seg_n[j], kappa_n[j], wireThickness[j], currentDensity_w[j], dt, dX[j]);
+            else {
+                for (unsigned j=0; j<data->numberOfT; ++j)
+                    fill_vector(T_curr[j], J[j], data->T_sub);
                 flagDone = 1;
             }
         }
@@ -372,78 +368,69 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         if (!flagDone && n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
-            update_thermal_values(alpha0_n, kappa0_n, c0_n, rho_seg0_n, R_seg0_n, T0_curr, J0, A, B, gamma, data->T_c, I0[n-1], data->I_c0_wtf, data->rho_norm_wtf, data->c_p, data->T_ref_wtf, R_seg0);
-            update_thermal_values(alpha1_n, kappa1_n, c1_n, rho_seg1_n, R_seg1_n, T1_curr, J1, A, B, gamma, data->T_c, I2[n-1], data->I_c1_wtf, data->rho_norm_wtf/surfaceRatio10, data->c_p, data->T_ref_wtf, R_seg1);
-            update_thermal_values(alpha2_n, kappa2_n, c2_n, rho_seg2_n, R_seg2_n, T2_curr, J2, A, B, gamma, data->T_c, I4[n-1], data->I_c2_wtf, data->rho_norm_wtf/surfaceRatio21, data->c_p, data->T_ref_wtf, R_seg2);
+            update_thermal_values(alpha_n[0], kappa_n[0], c_n[0], rho_seg_n[0], R_seg_n[0], T_curr[0], J[0], A, B, gamma, data->T_c, I[0][n-1], data->I_c0_wtf, data->rho_norm_wtf, data->c_p, data->T_ref_wtf, R_seg[0]);
+            update_thermal_values(alpha_n[1], kappa_n[1], c_n[1], rho_seg_n[1], R_seg_n[1], T_curr[1], J[1], A, B, gamma, data->T_c, I[2][n-1], data->I_c1_wtf, data->rho_norm_wtf/surfaceRatio10, data->c_p, data->T_ref_wtf, R_seg[1]);
+            update_thermal_values(alpha_n[2], kappa_n[2], c_n[2], rho_seg_n[2], R_seg_n[2], T_curr[2], J[2], A, B, gamma, data->T_c, I[4][n-1], data->I_c2_wtf, data->rho_norm_wtf/surfaceRatio21, data->c_p, data->T_ref_wtf, R_seg[2]);
             // update the current nanowire resistance
-            R0[n] = sum_vector(R_seg0_n, J0);
-            R1[n] = sum_vector(R_seg1_n, J1);
-            R2[n] = sum_vector(R_seg2_n, J2);
+            for (unsigned j=0; j<data->numberOfR; ++j)
+                R[j][n] = sum_vector(R_seg_n[j], J[j]);
         } else {
-            R0[n] = 0;
-            R1[n] = 0;
-            R2[n] = 0;
+            for (unsigned j=0; j<data->numberOfR; ++j)
+                R[j][n] = 0;
         }
 
         // update the current density through the nanowire
-        currentDensity_w0 = I0[n-1]/(data->wireWidth*data->wireThickness);
-        currentDensity_w1 = I2[n-1]/(data->wireWidth_1*data->wireThickness_1);
-        currentDensity_w2 = I4[n-1]/(data->wireWidth_2*data->wireThickness_2);
+        for (unsigned j=0; j<data->numberOfT; ++j)
+            currentDensity_w[j] = I[2*j][n-1]/(wireWidth[j]*wireThickness[j]);
         // update the electric values
-        advance_time_electric_wtf_3s(&I0[n], &I1[n], &I2[n], &I3[n], &I4[n], &I5[n], &V_c[n], I0[n-1], I1[n-1], I2[n-1], I3[n-1], I4[n-1], I5[n-1], V_c[n-1], XW0, XP0, XW1, XP1, XW2, XP2, X12, XM, Y, R0[n-1], R0[n], R1[n-1], R1[n], R2[n-1], R2[n], data->R_L_wtf, data->R_01_wtf, data->R_12_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_s2_wtf, data->R_p0_wtf, data->R_p1_wtf, data->R_p2_wtf, v_I_b0, v_I_b1, v_I_b2);
-        Iload[n] = v_I_b0 + v_I_b1 + v_I_b2 - I0[n] - I1[n] - I2[n] - I3[n] - I4[n] - I5[n];
+        advance_time_electric_wtf_3s(&I[0][n], &I[1][n], &I[2][n], &I[3][n], &I[4][n], &I[5][n], &V_c[n], I[0][n-1], I[1][n-1], I[2][n-1], I[3][n-1], I[4][n-1], I[5][n-1], V_c[n-1], XW0, XP0, XW1, XP1, XW2, XP2, X12, XM, Y, R[0][n-1], R[0][n], R[1][n-1], R[1][n], R[2][n-1], R[2][n], data->R_L_wtf, data->R_01_wtf, data->R_12_wtf, data->R_small_wtf, data->R_s0_wtf, data->R_s1_wtf, data->R_s2_wtf, data->R_p0_wtf, data->R_p1_wtf, data->R_p2_wtf, v_I_b0, v_I_b1, v_I_b2);
+        Iload[n] = v_I_b0 + v_I_b1 + v_I_b2 - I[0][n] - I[1][n] - I[2][n] - I[3][n] - I[4][n] - I[5][n];
 
         // shuffle the T pointers around so the old and new timestep don't point to the same array
-        T0_prev = T0_curr;
-        T1_prev = T1_curr;
-        T2_prev = T2_curr;
+        for (unsigned j=0; j<data->numberOfT; ++j)
+            T_prev[j] = T_curr[j];
         if (n % data->timeskip == 0 && n < N) {
-            T0_curr = T0[n/data->timeskip];
-            T1_curr = T1[n/data->timeskip];
-            T2_curr = T2[n/data->timeskip];
+            for (unsigned j=0; j<data->numberOfT; ++j)
+                T_curr[j] = T[j][n/data->timeskip];
         } else {
-            if (T0_prev == T_stash_1)
-                T0_curr = T_stash_2;
-            else
-                T0_curr = T_stash_1;
-
-            if (T1_prev == T_stash_3)
-                T1_curr = T_stash_4;
-            else
-                T1_curr = T_stash_3;
-
-            if (T2_prev == T_stash_5)
-                T2_curr = T_stash_6;
-            else
-                T2_curr = T_stash_5;
+            for (unsigned j=0; j<data->numberOfT; ++j) {
+                if (T_prev[j] == T_stash[2*j])
+                    T_curr[j] = T_stash[2*j+1];
+                else
+                    T_curr[j] = T_stash[2*j];
+            }
         }
     }
 
     // free allocated space
-    free(T_stash_1);
-    free(T_stash_2);
-    free(T_stash_3);
-    free(T_stash_4);
-    free(T_stash_5);
-    free(T_stash_6);
+    for (unsigned j=0; j<2*data->numberOfT; ++j)
+        free(T_stash[j]);
+    free(T_stash);
 
-    free(alpha0_n);
-    free(kappa0_n);
-    free(c0_n);
-    free(rho_seg0_n);
-    free(R_seg0_n);
+    free(T_prev);
+    free(T_curr);
 
-    free(alpha1_n);
-    free(kappa1_n);
-    free(c1_n);
-    free(rho_seg1_n);
-    free(R_seg1_n);
+    for (unsigned j=0; j<data->numberOfT; ++j) {
+        free(alpha_n[j]);
+        free(kappa_n[j]);
+        free(c_n[j]);
+        free(rho_seg_n[j]);
+        free(R_seg_n[j]);
+    }
+    free(alpha_n);
+    free(kappa_n);
+    free(c_n);
+    free(rho_seg_n);
+    free(R_seg_n);
 
-    free(alpha2_n);
-    free(kappa2_n);
-    free(c2_n);
-    free(rho_seg2_n);
-    free(R_seg2_n);
+    free(T);
+    free(I);
+    free(R);
+    free(wireWidth);
+    free(wireThickness);
+
+    free(R_seg);
+    free(currentDensity_w);
 
     // transmission line loop
     if (data->simTL)

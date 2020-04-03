@@ -125,7 +125,7 @@ int calculate_bias_from_target_currents_wtf_2s(double * v_I_b0, double * v_I_b1,
 }
 
 // main function that runs the simulation
-int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, double dt, size_t J0, size_t J1, size_t N, size_t NT, size_t NE, size_t NTL) {
+int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, double dt, size_t J0, size_t J1, size_t N, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
     double ** T0 = res->T[0];
     double ** T1 = res->T[1];

@@ -32,7 +32,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     if (data->numberOfT > 1) J1 = data->J1;
     if (data->numberOfT > 2) J2 = data->J2;
     size_t N = data->N;
-    size_t NT = data->N/data->timeskip;
+    size_t NT = data->N/data->timeskip + 1;
     size_t NE = data->N*data->ETratio;
     size_t NTL = data->NTL;
 
@@ -90,16 +90,16 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
 
     switch(runType) {
         case 0:
-            run_yang(res, data, res->dX[0], res->dt, J0, N, NT, NE, NTL);
+            run_yang(res, data, res->dX[0], res->dt, J0, N, NE, NTL);
             break;
         case 1:
-            run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NT, NE, NTL);
+            run_yang_parallel(res, data, res->dX[0], res->dt, J0, N, NE, NTL);
             break;
         case 4:
-            run_waterfall_2s_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NT, NE, NTL);
+            run_waterfall_2s_res(res, data, res->dX[0], res->dX[1], res->dt, J0, J1, N, NE, NTL);
             break;
         case 6:
-            run_waterfall_3s_res(res, data, res->dX[0], res->dX[1], res->dX[2], res->dt, J0, J1, J2, N, NT, NE, NTL);
+            run_waterfall_3s_res(res, data, res->dX, res->dt, res->J, N, NE, NTL);
             break;
         default:
             printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);

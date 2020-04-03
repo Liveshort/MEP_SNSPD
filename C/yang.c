@@ -54,7 +54,7 @@ int advance_time_electric_basic_yang(double * I_np1, double * V_c_np1, double I_
 }
 
 // main function that runs the simulation
-int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NT, size_t NE, size_t NTL) {
+int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_t N, size_t NE, size_t NTL) {
     // first locally save some important parameters that we will need all the time
     double ** T = res->T[0];
     double * I = res->I[0];

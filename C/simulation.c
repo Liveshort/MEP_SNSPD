@@ -293,7 +293,7 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     // write data to binary files
     fp = fopen(TFilename, "wb");
     for (unsigned q=0; q<res->numberOfT; ++q) {
-        for (unsigned n=0; n<res->N/res->timeskip; ++n)
+        for (unsigned n=0; n<res->N/res->timeskip+1; ++n)
         fwrite(res->T[q][n], sizeof(double), res->J[q], fp);
     }
     fclose(fp);

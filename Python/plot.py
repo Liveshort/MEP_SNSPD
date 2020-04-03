@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import struct
 
+from math import ceil
+
 # returns number of currents for a given runtype
 def rtToNC(runtype):
     if runtype == 0:
@@ -64,14 +66,14 @@ V_c = [[] for i in range(numberOfC)]
 
 with open("../sim_results/T.bin", "rb") as file:
     for i in range(numberOfT):
-        for (item, ) in struct.iter_unpack('d', file.read(8*J[i]*N//timeskip)):
+        for (item, ) in struct.iter_unpack('d', file.read(8*J[i]*ceil(N/timeskip))):
             T_tmp[i].append(item)
 
-T0 = np.array(T_tmp[0]).reshape(N//timeskip, J[0])
+T0 = np.array(T_tmp[0]).reshape(ceil(N/timeskip), J[0])
 if numberOfT > 1:
-    T1 = np.array(T_tmp[1]).reshape(N//timeskip, J[1])
+    T1 = np.array(T_tmp[1]).reshape(ceil(N/timeskip), J[1])
 if numberOfT > 2:
-    T2 = np.array(T_tmp[2]).reshape(N//timeskip, J[2])
+    T2 = np.array(T_tmp[2]).reshape(ceil(N/timeskip), J[2])
 
 with open("../sim_results/I.bin", "rb") as file:
     for i in range(numberOfI):

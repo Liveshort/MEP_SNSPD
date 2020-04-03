@@ -318,6 +318,12 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
     double delay = data->LTL/(data->VF*c0);
     unsigned steps = (unsigned) (delay/res->dt);
 
+    if (steps >= NE) {
+        printf("\nError: estimated delay (%4.2e [s] ~~ %u steps) is larger than simulation space (%ld)...\nTreating transmission line type as 0 instead", delay, steps, NE);
+
+        return -1;
+    }
+
     double C_T = delay/(50*NTL);
     double L_T = (50*delay)/NTL;
 
@@ -491,4 +497,6 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
         free(AT);
         free(bT);
     }
+
+    return 0;
 }
