@@ -58,6 +58,11 @@ int collect_data(FILE * fp, SimData * data) {
         data->numberOfI = 9;
         data->numberOfR = 3;
         data->numberOfC = 3;
+    } else if (data->runType == 10) {
+        data->numberOfT = 12;
+        data->numberOfI = 27;
+        data->numberOfR = 12;
+        data->numberOfC = 4;
     }
 
     // scan data runtype 0 and 1
