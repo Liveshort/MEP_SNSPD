@@ -120,11 +120,11 @@ typedef struct _simdata {
     double L_m_wtf;         // inductance measurement branch
     double L_12_wtf;        // inductance between stage 0 and 1
     // data specific to the resistive summation model
-    double Rk_0_rsm;        // resistor connected to waterfall circuit 0
-    double Rk_1_rsm;        // resistor connected to waterfall circuit 1
-    double Rk_2_rsm;        // resistor connected to waterfall circuit 2
-    double Rk_3_rsm;        // resistor connected to waterfall circuit 3
-    double Rap_rsm;         // resistor parallel to the amplifier (load) resistor
+    double R_k0_rsm;        // resistor connected to waterfall circuit 0
+    double R_k1_rsm;        // resistor connected to waterfall circuit 1
+    double R_k2_rsm;        // resistor connected to waterfall circuit 2
+    double R_k3_rsm;        // resistor connected to waterfall circuit 3
+    double R_Lp_rsm;        // resistor parallel to the amplifier (load) resistor
 } SimData;
 
 void free_simres(SimRes * simRes);

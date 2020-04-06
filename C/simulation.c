@@ -190,7 +190,7 @@ int collect_data(FILE * fp, SimData * data) {
     }
 
     // scan data runtype 6-7
-    if (data->runType >= 6 && data->runType <= 7) {
+    if (data->runType >= 6 && data->runType <= 7 || data->runType == 10) {
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->allowOpt, dump) < 1) exit(6);
         if (fscanf(fp, "%d;%2000[^\n]\n", &data->simTL, dump) < 1) exit(6);
 
@@ -272,6 +272,16 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->L_12_wtf, dump) < 1) exit(6);
     }
 
+    if (data->runType == 10) {
+        if (fscanf(fp, "%2000[^\n]\n", dump) < 1) exit(6);
+
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_k0_rsm, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_k1_rsm, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_k2_rsm, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_k3_rsm, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->R_Lp_rsm, dump) < 1) exit(6);
+    }
+
     fclose(fp);
 
     return 0;
@@ -298,7 +308,7 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
     // write data to binary files
     fp = fopen(TFilename, "wb");
     for (unsigned q=0; q<res->numberOfT; ++q) {
-        for (unsigned n=0; n<res->N/res->timeskip+1; ++n)
+        for (unsigned n=0; n<res->N/res->timeskip; ++n)
         fwrite(res->T[q][n], sizeof(double), res->J[q], fp);
     }
     fclose(fp);
@@ -380,6 +390,17 @@ int main(int argc, char * argv[]) {
     // put in the experiment data
     SimData * data = calloc(1, sizeof(SimData));
     collect_data(fp, data);
+
+    // check if some of the parameters make sense
+    if (data->N % data->timeskip != 0 || data->N <= 0) {
+        printf("Error: invalid N (%ld), not larger than 0 or N is not an integer multiple of timeskip (%ld)...\nExiting with code 8.\n", data->N, data->timeskip);
+        exit(8);
+    }
+
+    if (data->timeskip % 10 != 0 || data->timeskip > 100000) {
+        printf("Error: timeskip is not a multiple of 10...\nExiting with code 9.\n");
+        exit(9);
+    }
 
     // run simulation
     SimRes * res = run_snspd_simulation(data, data->runType);

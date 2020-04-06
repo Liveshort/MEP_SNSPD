@@ -11,6 +11,17 @@ void print_vector(double * vec, size_t J) {
     printf("]\n");
 }
 
+void print_matrix(double * mat, size_t m) {
+    printf("####### matrix (%zu x %zu):\n", m, m);
+    for (unsigned j=0; j<m; ++j) {
+        for (unsigned k=0; k<m; ++k) {
+            printf("%7.2g ", mat[m*j+k]);
+        }
+        puts("");
+    }
+    puts("####### end matrix");
+}
+
 double max_vector(double * vec, size_t J) {
     double max = -1E99;
 

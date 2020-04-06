@@ -10,6 +10,7 @@
 #include "yang_par.h"
 #include "waterfall_2s_res.h"
 #include "waterfall_3s_res.h"
+#include "resistive_summation_3s_res.h"
 
 // function that coordinates the overall simulation. Data comes into this function from python
 //     or whatever, is processed by the library, and is then returned to the user as a result
@@ -32,7 +33,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     if (data->numberOfT > 1) J1 = data->J1;
     if (data->numberOfT > 2) J2 = data->J2;
     size_t N = data->N;
-    size_t NT = data->N/data->timeskip + 1;
+    size_t NT = data->N/data->timeskip;
     size_t NE = data->N*data->ETratio;
     size_t NTL = data->NTL;
 
@@ -49,6 +50,9 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     res->J[0] = J0;
     if (data->numberOfT > 1) res->J[1] = J1;
     if (data->numberOfT > 2) res->J[2] = J2;
+    if (data->runType == 10)
+        for (unsigned k=3; k<data->numberOfT; ++k)
+            res->J[k] = res->J[k-3];
     res->N = N;
 
     res->numberOfT = data->numberOfT;
@@ -86,6 +90,9 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
     res->dX[0] = data->wireLength / (J0 - 1);
     if (data->numberOfT > 1) res->dX[1] = data->wireLength_1 / (J1 - 1);
     if (data->numberOfT > 2) res->dX[2] = data->wireLength_2 / (J2 - 1);
+    if (data->runType == 10)
+        for (unsigned k=3; k<data->numberOfT; ++k)
+            res->dX[k] = res->dX[k-3];
     res->dt = data->tMax / (N - 1);
 
     switch(runType) {
@@ -100,6 +107,9 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
             break;
         case 6:
             run_waterfall_3s_res(res, data, res->dX, res->dt, res->J, N, NE, NTL);
+            break;
+        case 10:
+            run_resistive_summation_3s_res(res, data, res->dX, res->dt, res->J, N, NE, NTL);
             break;
         default:
             printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
