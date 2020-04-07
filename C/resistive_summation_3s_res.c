@@ -8,6 +8,7 @@
 #include "helper.h"
 #include "thermal.h"
 #include "transmission.h"
+#include "omp.h"
 
 // advances the electric model one timestep using BLAS matrix algebra.
 // you need the LAPACK for this, or work out the matrix logic on your own (not recommended)
@@ -346,7 +347,7 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
         v_I_b2 = data->I_b2_wtf;
     }
     // print bias currents
-    printf("bias currents:    %4.2e %4.2e %4.2e\n", v_I_b0, v_I_b1, v_I_b2);
+    printf("    bias currents:    %4.2e %4.2e %4.2e\n", v_I_b0, v_I_b1, v_I_b2);
     // put the right currents in the results
     for (unsigned k=0; k<4; ++k) {
         res->I_b[3*k] = v_I_b0;
@@ -380,7 +381,7 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
         }
     }
     // print initial currents
-    printf("initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n", I[0][0], I[1][0], I[2][0], I[3][0], I[4][0], I[5][0]);
+    printf("    initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n\n", I[0][0], I[1][0], I[2][0], I[3][0], I[4][0], I[5][0]);
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -390,7 +391,7 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_wtf, 3));
 
-    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
+    printf("    Delta: %e\n    A:     %e\n    gamma: %e\n    B:     %e\n\n", DeltaRef, A, gamma, B);
 
     // determine surface ratio between the cross sections of the wires
     double * surfaceRatio = calloc(data->numberOfT, sizeof(double));
@@ -441,12 +442,14 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
 
         // advance the thermal model to the next time step after the initial step
         if (n > data->timeskip+1 && n < N)
+            #pragma omp parallel for
             for (unsigned j=0; j<data->numberOfT; ++j)
-                    advance_time_thermal(T_prev[j], T_curr[j], J[j], data->T_sub, alpha_n[j], c_n[j], rho_seg_n[j], kappa_n[j], wireThickness[j], currentDensity_w[j], dt, dX[j]);
+                advance_time_thermal(T_prev[j], T_curr[j], J[j], data->T_sub, alpha_n[j], c_n[j], rho_seg_n[j], kappa_n[j], wireThickness[j], currentDensity_w[j], dt, dX[j]);
 
         if (n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
+            #pragma omp parallel for
             for (unsigned j=0; j<data->numberOfT; ++j) {
                 update_thermal_values(alpha_n[j], kappa_n[j], c_n[j], rho_seg_n[j], R_seg_n[j], T_curr[j], J[j], A, B, gamma, data->T_c, I[2*j][n-1], I_c[j], data->rho_norm_wtf/surfaceRatio[j], data->c_p, data->T_ref_wtf, R_seg[j]);
             }
@@ -521,7 +524,7 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
         sim_transmission_line(data, res, NE, NTL, 3);
 
     // print result
-    puts("\nSimulation completed.");
+    puts("\n    Simulation completed.");
     res->exitValue = 0;
     return 0;
 }

@@ -175,7 +175,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         v_I_b0 = data->I_b0_wtf;
         v_I_b1 = data->I_b1_wtf;
     }
-    printf("bias currents %4.2e %4.2e\n", v_I_b0, v_I_b1);
+    printf("    bias currents %4.2e %4.2e\n\n", v_I_b0, v_I_b1);
 
     // determine initial conditions
     double R_v0 = data->R_p0_wtf*data->R_s0_wtf/(data->R_p0_wtf + data->R_s0_wtf);
@@ -217,7 +217,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_wtf, 3));
 
-    printf("DeltaRef: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
+    printf("    DeltaRef: %e\n    A:     %e\n    gamma: %e\n    B:     %e\n\n", DeltaRef, A, gamma, B);
 
     // determine surface ratio between the cross sections of the wires
     double surfaceRatio10 = data->wireThickness_1*data->wireWidth_1/data->wireThickness/data->wireWidth;
@@ -335,7 +335,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         sim_transmission_line(data, res, NE, NTL, 1);
 
     // print result
-    puts("\nSimulation completed.");
+    puts("\n    Simulation completed.");
     res->exitValue = 0;
     return 0;
 }

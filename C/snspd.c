@@ -22,7 +22,7 @@
 //            snspd with a parallel resistor and inductor, connected to a load resistor and
 //            capacitor.
 SimRes * run_snspd_simulation(SimData * data, int runType) {
-    printf("Runtype %d\n", runType);
+    printf("    Runtype %d\n\n", runType);
     size_t J0, J1, J2;
     // first locally save some important parameters that we will need all the time
     J0 = data->J0;
@@ -112,7 +112,7 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
             run_resistive_summation_3s_res(res, data, res->dX, res->dt, res->J, N, NE, NTL);
             break;
         default:
-            printf("Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
+            printf("    Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
             res->exitValue = 1;
             exit(1);
     }

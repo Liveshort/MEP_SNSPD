@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include <sys/sysinfo.h>
+
 #include "types.h"
 #include "snspd.h"
 #include "helper.h"
-
 #include "linalg.h"
 
 int collect_data(FILE * fp, SimData * data) {
@@ -371,14 +372,19 @@ int write_results(char * outputPath, FILE * fp, SimRes * res) {
 }
 
 int main(int argc, char * argv[]) {
+    puts("########################################################################################\n################################### SNSPD SIMULATION ###################################\n########################################################################################\n");
+
     // check and open setup file
     if (argc != 3) {
         puts("Wrong number of arguments...\nUsage: ./simulation inputFile outputFolder\nExiting...");
         exit(4);
     }
 
-    printf("Input file:    %s\n", argv[1]);
-    printf("Output folder: %s\n", argv[2]);
+    printf("    %d processors detected. %d processors available.\n", get_nprocs_conf(), get_nprocs());
+    printf("    OMP_NUM_THREADS set to %s, using that amount of threads.\n\n", getenv("OMP_NUM_THREADS"));
+
+    printf("    Input file:       %s\n", argv[1]);
+    printf("    Output folder:    %s\n\n", argv[2]);
 
     FILE * fp;
 
@@ -405,12 +411,14 @@ int main(int argc, char * argv[]) {
     // run simulation
     SimRes * res = run_snspd_simulation(data, data->runType);
 
-    puts("Writing files...");
+    puts("    Writing files...");
     write_results(argv[2], fp, res);
-    puts("Done.");
+    puts("    Done.\n");
 
     free_simres(res);
     free_simdata(data);
+
+    puts("########################################################################################\n#################################### END SIMULATION ####################################\n########################################################################################");
 
     exit(0);
 }

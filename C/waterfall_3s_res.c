@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <lapacke.h>
+#include <omp.h>
 
 #include "types.h"
 #include "helper.h"
@@ -273,7 +274,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
         v_I_b2 = data->I_b2_wtf;
     }
     // print bias currents
-    printf("bias currents:    %4.2e %4.2e %4.2e\n", v_I_b0, v_I_b1, v_I_b2);
+    printf("    bias currents:    %4.2e %4.2e %4.2e\n", v_I_b0, v_I_b1, v_I_b2);
     // put the right currents in the results
     res->I_b[0] = v_I_b0;
     res->I_b[1] = v_I_b1;
@@ -293,7 +294,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
         V_c[n] = (v_I_t4+v_I_t5)*data->R_p2_wtf*data->R_s2_wtf/(data->R_p2_wtf + data->R_s2_wtf);
     }
     // print initial currents
-    printf("initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n", I[0][0], I[1][0], I[2][0], I[3][0], I[4][0], I[5][0]);
+    printf("    initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n\n", I[0][0], I[1][0], I[2][0], I[3][0], I[4][0], I[5][0]);
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -303,7 +304,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_wtf, 3));
 
-    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
+    printf("    Delta: %e\n    A:     %e\n    gamma: %e\n    B:     %e\n\n", DeltaRef, A, gamma, B);
 
     // determine surface ratio between the cross sections of the wires
     double surfaceRatio10 = wireThickness[1]*wireWidth[1]/wireThickness[0]/wireWidth[0];
@@ -356,6 +357,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
         // advance the thermal model to the next time step after the initial step
         if (n > data->timeskip+1 && n < N) {
             if (!data->allowOpt || cmp_vector(T_prev[0], J[0], data->T_sub, data->T_sub_eps) || cmp_vector(T_prev[1], J[1], data->T_sub, data->T_sub_eps) || cmp_vector(T_prev[2], J[2], data->T_sub, data->T_sub_eps))
+                #pragma omp parallel for
                 for (unsigned j=0; j<data->numberOfT; ++j)
                     advance_time_thermal(T_prev[j], T_curr[j], J[j], data->T_sub, alpha_n[j], c_n[j], rho_seg_n[j], kappa_n[j], wireThickness[j], currentDensity_w[j], dt, dX[j]);
             else {
@@ -437,7 +439,7 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
         sim_transmission_line(data, res, NE, NTL, 3);
 
     // print result
-    puts("\nSimulation completed.");
+    puts("\n    Simulation completed.");
     res->exitValue = 0;
     return 0;
 }

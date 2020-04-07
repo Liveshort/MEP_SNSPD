@@ -1,6 +1,7 @@
 CC     = gcc
 FC     = gfortran
-CFLAGS = -I -Wall -Wextra
+CFLAGS = -g -I -Wall -Wextra -fopenmp -std=c11 -fPIC -Ofast
+FFLAGS = -g -fopenmp
 
 DEPDIR = include
 OBJDIR = obj
@@ -28,12 +29,12 @@ _OBJ   = types.o linalg.o helper.o transmission.o thermal.o yang.o yang_par.o wa
 OBJ    = $(patsubst %,$(OBJDIR)/%,$(_OBJ))
 
 $(OBJDIR)/%.o: %.c $(DEPS)
-	$(CC) -g -I $(DEPDIR) -I $(BLSDIR) -std=c11 -c -fPIC -Ofast -o $@ $< $(CFLAGS)
+	$(CC) -I $(DEPDIR) -I $(BLSDIR) $(CFLAGS) -c -o $@ $<
 
 all: simulation
 
 simulation: $(OBJ) $(LIBS)
-	$(FC) -g $(FFLAGS) $(LDFLAGS) -o bld/$@ $^
+	$(FC) $(FFLAGS) $(LDFLAGS) -o bld/$@ $^
 
 run:
 	./bld/simulation ${args}

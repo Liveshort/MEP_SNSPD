@@ -319,7 +319,7 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
     unsigned steps = (unsigned) (delay/res->dt);
 
     if (steps >= NE) {
-        printf("\nError: estimated delay (%4.2e [s] ~~ %u steps) is larger than simulation space (%ld)...\nTreating transmission line type as 0 instead", delay, steps, NE);
+        printf("\n    Error: est. delay (%4.2e [s] ~ %u steps) is larger than sim. space (%ld)\n    Treating transmission line type as 0 instead.\n", delay, steps, NE);
 
         return -1;
     }
@@ -330,13 +330,13 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
     if (data->simTL == DELAYTRNS) {
         double * Iload = res->I[data->numberOfI-3];
 
-        printf("\nTransmission line delay: %4.2e s ==> %u steps\nComputing...", delay, steps);
+        printf("\n    Transmission line delay: %4.2e s ==> %u steps\n    Computing...\n", delay, steps);
         for (unsigned n=NE-1; n>=steps; --n)
             Iload[n] = Iload[n-steps];
         for (unsigned n=0; n<steps; ++n)
             Iload[n] = 0;
     } else if (data->simTL == VARRPLCTRNS) {
-        printf("\nTransmission line properties: C = %4.2e F, L = %4.2e H", C_T, L_T);
+        printf("\n    Transmission line properties: C = %4.2e F, L = %4.2e H", C_T, L_T);
         // calculate transmission line constants
         double XT = (2*L_T)/res->dt;
         double YT = res->dt/(2*C_T);
@@ -361,7 +361,7 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
         fill_transmission_matrix_varRr(AT, NTL, XT, YT, data->R_L_std);
         lapack_int * ipiv = calloc(2*NTL+1, sizeof(lapack_int));
 
-        puts("\nTransmission line loop:");
+        puts("\n    Transmission line loop:");
         for (unsigned n=data->timeskip+1; n<NE; ++n) {
             // print progress
             print_progress(n, NE);
@@ -382,6 +382,8 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
             swap_ptr((void **) &V_c_tl_prev, (void **) &V_c_tl_curr);
         }
 
+        puts("");
+
         free(I_tl_prev);
         free(I_tl_curr);
         free(V_c_tl_prev);
@@ -391,7 +393,7 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
         free(bT);
         free(ipiv);
     } else if (data->simTL == CONSTRPLCTRNS) {
-        printf("\nTransmission line properties: C = %4.2e F, L = %4.2e H", C_T, L_T);
+        printf("\n    Transmission line properties: C = %4.2e F, L = %4.2e H", C_T, L_T);
         // calculate transmission line constants
         double XT = (2*L_T)/res->dt;
         double YT = res->dt/(2*C_T);
@@ -415,7 +417,7 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
         double * bT = calloc(2*NTL+1, sizeof(double));
         fill_transmission_matrix_constRr(AT, NTL, XT, YT, data->R_L_std);
 
-        puts("\nTransmission line loop:");
+        puts("\n    Transmission line loop:");
         for (unsigned n=data->timeskip+1; n<NE; ++n) {
             // print progress
             print_progress(n, NE);
@@ -437,6 +439,8 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
             swap_dbl(&I_b_tl_curr, &I_b_tl_prev);
         }
 
+        puts("");
+
         free(I_tl_prev);
         free(I_tl_curr);
         free(V_c_tl_prev);
@@ -444,7 +448,7 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
         free(AT);
         free(bT);
     } else if (data->simTL == NORPLCTRNS) {
-        printf("\nTransmission line properties: C = %4.2e F, L = %4.2e H", C_T, L_T);
+        printf("\n    Transmission line properties: C = %4.2e F, L = %4.2e H", C_T, L_T);
         // calculate transmission line constants
         double XT = (2*L_T)/res->dt;
         double YT = res->dt/(2*C_T);
@@ -468,7 +472,7 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
         double * bT = calloc(2*NTL, sizeof(double));
         fill_transmission_matrix_noRr(AT, NTL, XT, YT, data->R_L_std);
 
-        puts("\nTransmission line loop:");
+        puts("\n    Transmission line loop:");
         for (unsigned n=data->timeskip+1; n<NE; ++n) {
             // print progress
             print_progress(n, NE);
@@ -489,6 +493,8 @@ int sim_transmission_line(SimData * data, SimRes * res, size_t NE, size_t NTL, s
             swap_ptr((void **) &V_c_tl_prev, (void **) &V_c_tl_curr);
             swap_dbl(&I_b_tl_curr, &I_b_tl_prev);
         }
+
+        puts("");
 
         free(I_tl_prev);
         free(I_tl_curr);

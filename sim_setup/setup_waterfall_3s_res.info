@@ -9,7 +9,7 @@
 1E-9; tMax (maximum time for thermal model, sim will run from 0 to tMax)
 20; timeskip (factor to reduce timesteps that are used in the calculation, but not shown in the result)
 15; ETratio (ratio between time calculated for the electrical model and thermal model)
-250; NTL (number of transmission line elements)
+500; NTL (number of transmission line elements)
 0.77; VF (velocity factor transmission line. Calculated as 1/sqrt(eps_r))
 2.0; LTL (length of transmission line in [m])
     // physical dimensions detector wire

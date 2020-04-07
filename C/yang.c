@@ -108,7 +108,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
-    printf("Delta: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
+    printf("    Delta: %e\n    A:     %e\n    gamma: %e\n    B:     %e\n\n", DeltaRef, A, gamma, B);
 
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
@@ -132,7 +132,7 @@ int run_yang(SimRes * res, SimData * data, double dX, double dt, size_t J, size_
     int flagDone = 0;
 
     // main time loop
-    puts("Main time loop:");
+    puts("    Main time loop:");
     for (unsigned n=data->timeskip+1; n<NE; ++n) {
         // print progress
         print_progress(n, NE);

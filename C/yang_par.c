@@ -115,7 +115,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
     double gamma = A/(2.43*data->T_c);
     double B = data->alpha/(pow(data->T_ref_std, 3));
 
-    printf("DeltaRef: %e\nA:     %e\ngamma: %e\nB:     %e\n", DeltaRef, A, gamma, B);
+    printf("    DeltaRef: %e\n    A:     %e\n    gamma: %e\n    B:     %e\n\n", DeltaRef, A, gamma, B);
 
     // define the resistance of a segment of wire in the normal state
     double R_seg = data->rho_norm_std*dX/(data->wireWidth*data->wireThickness);
@@ -196,7 +196,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
         sim_transmission_line(data, res, NE, NTL, 1);
 
     // print result
-    puts("\nSimulation completed.");
+    puts("\n    Simulation completed.");
     res->exitValue = 0;
     return 0;
 }

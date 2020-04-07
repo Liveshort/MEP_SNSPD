@@ -46,7 +46,7 @@
 0.0; I_b2_wtf (bias current stage 2)
 16.5E-6; I_t0_wtf (target current detector)
 33E-6; I_t1_wtf (target current stage 1)
-66E-6; I_t2_wtf (target current stage 2)
+62E-6; I_t2_wtf (target current stage 2)
 3E-9; initHS_l_wtf (initial hotspot length (to simulate a photon hit))
 8; initHS_T_wtf (initial hotspot temperature)
 2.4E-6; rho_norm_wtf (conductivity of the nanowire in normal state)
@@ -64,7 +64,7 @@
 0E-9; L_p0_wtf (parallel inductance detector wire)
 100E-9; L_p1_wtf (parallel inductance stage 1 wire)
 50E-9; L_p2_wtf (parallel inductance stage 2 wire)
-5E-9; L_m_wtf (inductance before the measurement capacitor)
+50E-9; L_m_wtf (inductance before the measurement capacitor)
 20E-9; L_01_wtf (inductance between stage 0 and 1)
     // data specific to the resistive summation model
 50; R_k0_rsm (resistor connected to waterfall circuit 0)
