@@ -45,6 +45,8 @@ sim_results/*
 nosync/*
 Python/Monte_Carlo/res/*
 !Python/Monte_Carlo/res/.gitkeep
+Python/Monte_Carlo/images/*
+!Python/Monte_Carlo/images/.gitkeep
 
 # Debug files
 *.dSYM/

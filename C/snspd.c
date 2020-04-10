@@ -113,7 +113,6 @@ SimRes * run_snspd_simulation(SimData * data, int runType) {
             break;
         default:
             printf("    Unknown runtype %d...\nExiting with error 1 (wrong runtype)...\n", runType);
-            res->exitValue = 1;
             exit(1);
     }
 

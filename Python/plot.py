@@ -135,24 +135,8 @@ plt.ylabel("T [K]")
 plt.show(block=False)
 
 # plot the currents
-#plt.figure()
-#for i in range(numberOfI - 2):
-#    plt.plot(tE*dt*1e9, I[i,:]*1e6)
-#if runtype == 0:
-#    plt.legend(["I0 (detector)", "I_load"], loc="upper center")
-#elif runtype == 1:
-#    plt.legend(["I0 (detector)", "I1 (par stg 0)", "I_load"], loc="upper center")
-#elif runtype == 4:
-#    plt.legend(["I0 (detector)", "I1 (par stg 0)", "I2 (wire stg 1)", "I3 (par stg 1)", "I_load"], loc="upper center")
-#elif runtype == 6:
-#    plt.legend(["I0 (detector)", "I1 (par stg 0)", "I2 (wire stg 1)", "I3 (par stg 1)", "I4 (wire stg 2)", "I5 (par stg 2)", "I_load"], loc="upper center")
-#plt.xlabel("t (ns)")
-#plt.ylabel("I ($\mu$A)")
-#plt.show(block=False)
-
-# plot the currents
 plt.figure()
-for i in [0, 2, 4, 6, 8, 10, 24]:
+for i in range(numberOfI - 2):
     plt.plot(tE*dt*1e9, I[i,:]*1e6)
 if runtype == 0:
     plt.legend(["I0 (detector)", "I_load"], loc="upper center")
@@ -162,17 +146,51 @@ elif runtype == 4:
     plt.legend(["I0 (detector)", "I1 (par stg 0)", "I2 (wire stg 1)", "I3 (par stg 1)", "I_load"], loc="upper center")
 elif runtype == 6:
     plt.legend(["I0 (detector)", "I1 (par stg 0)", "I2 (wire stg 1)", "I3 (par stg 1)", "I4 (wire stg 2)", "I5 (par stg 2)", "I_load"], loc="upper center")
-elif runtype == 10:
-    plt.legend(["I0 (det photon)", "I2 (stg 1 photon)", "I4 (stg 2 photon)", "I6 (det other)", "I8 (stg 1 other)", "I10 (stg 2 other)", "I_load"], loc="upper center")
 plt.xlabel("t (ns)")
 plt.ylabel("I ($\mu$A)")
 plt.show(block=False)
+
+# plot the currents
+#plt.figure()
+#for i in [0, 2, 4, 6, 8, 10, 24]:
+#    plt.plot(tE*dt*1e9, I[i,:]*1e6)
+#if runtype == 0:
+#    plt.legend(["I0 (detector)", "I_load"], loc="upper center")
+#elif runtype == 1:
+#    plt.legend(["I0 (detector)", "I1 (par stg 0)", "I_load"], loc="upper center")
+#elif runtype == 4:
+#    plt.legend(["I0 (detector)", "I1 (par stg 0)", "I2 (wire stg 1)", "I3 (par stg 1)", "I_load"], loc="upper center")
+#elif runtype == 6:
+#    plt.legend(["I0 (detector)", "I1 (par stg 0)", "I2 (wire stg 1)", "I3 (par stg 1)", "I4 (wire stg 2)", "I5 (par stg 2)", "I_load"], loc="upper center")
+#elif runtype == 10:
+#    plt.legend(["I0 (det photon)", "I2 (stg 1 photon)", "I4 (stg 2 photon)", "I6 (det other)", "I8 (stg 1 other)", "I10 (stg 2 other)", "I_load"], loc="upper center")
+#plt.xlabel("t (ns)")
+#plt.ylabel("I ($\mu$A)")
+#plt.show(block=False)
 
 # plot the currents in the transmission line
 plt.figure()
 for i in range(numberOfI - 3, numberOfI):
     plt.plot(tE*dt*1e9, I[i,:]*1e6)
 plt.legend(["I_load", "I_tl_sum", "I_tl"], loc="upper center")
+plt.xlabel("t (ns)")
+plt.ylabel("I ($\mu$A)")
+plt.show(block=False)
+
+# plot the currents in the transmission line
+plt.figure()
+for i in [0, 2, 4]:
+    plt.plot(tE*dt*1e9, I[i,:]*1e6)
+plt.legend(["I_load", "I_tl_sum", "I_tl"], loc="upper center")
+plt.xlabel("t (ns)")
+plt.ylabel("I ($\mu$A)")
+plt.show(block=False)
+
+# plot the currents in the transmission line
+plt.figure()
+for i in [0, 2, 3, 4]:
+    plt.plot(tE*dt*1e9, I[i,:]*1e6)
+plt.legend(["I_0 (det)", "I_2 (stg 1)", "I_3 (stg 1 par)", "I_ld (load)"], loc="upper center")
 plt.xlabel("t (ns)")
 plt.ylabel("I ($\mu$A)")
 plt.show(block=False)

@@ -161,7 +161,7 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     if (initHS_segs < 2) {
         puts("Number of segments in initial hot-spot smaller than 2.\nReturning empty result with error code 2 (wrong initial hot-spot size)...");
         res->exitValue = 2;
-        return 2;
+        exit(2);
     }
     for (unsigned j=halfway - initHS_segs/2; j<halfway + initHS_segs/2; ++j) {
         T0_curr[j] = data->initHS_T_wtf;
