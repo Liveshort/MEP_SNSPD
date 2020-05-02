@@ -43,6 +43,8 @@ typedef struct _simdata {
     double tMax;            // maximum time, sim will run from 0 to tMax
     size_t timeskip;        // factor to reduce timesteps that are used in the calculation, but not shown in the result. !!!! Has to be a multiple of 10, because the electric resolution is always 10 times higher than the thermal resolution
     size_t ETratio;         // ratio between time calculated for electrical model and thermal model
+    double impurityOffset;  //minimum impurity of critical current in the middle of the wire (in micro amps))
+    double impuritySpread;  //spread in impurity in critical current in the wires)
     size_t NTL;             // number of transmission line elements
     double VF;              // velocity factor transmission line. Calculated as 1/sqrt(eps_r)
     double LTL;             // length of transmission line in [m]

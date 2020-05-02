@@ -295,6 +295,21 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
     }
     // print initial currents
     printf("    initial currents: %4.2e %4.2e %4.2e %4.2e %4.2e %4.2e\n\n", I[0][0], I[1][0], I[2][0], I[3][0], I[4][0], I[5][0]);
+    // set up vectors for the critical currents to simulate nanowire impurities
+    double ** I_c = calloc(data->numberOfT, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfT; ++j) {
+        I_c[j] = calloc(J[j], sizeof(double));
+
+        double curr_I_c;
+        if (j == 0) curr_I_c = data->I_c0_wtf;
+        else if (j == 1) curr_I_c = data->I_c1_wtf;
+        else if (j == 2) curr_I_c = data->I_c2_wtf;
+
+        for (unsigned k=0; k<J[j]; ++k)
+            I_c[j][k] = curr_I_c + data->impurityOffset + data->impuritySpread*(((double) rand() / (double) RAND_MAX));
+
+        I_c[j][J[j]/2] = curr_I_c;
+    }
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -370,9 +385,9 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
         if (!flagDone && n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
-            update_thermal_values(alpha_n[0], kappa_n[0], c_n[0], rho_seg_n[0], R_seg_n[0], T_curr[0], J[0], A, B, gamma, data->T_c, I[0][n-1], data->I_c0_wtf, data->rho_norm_wtf, data->c_p, data->T_ref_wtf, R_seg[0]);
-            update_thermal_values(alpha_n[1], kappa_n[1], c_n[1], rho_seg_n[1], R_seg_n[1], T_curr[1], J[1], A, B, gamma, data->T_c, I[2][n-1], data->I_c1_wtf, data->rho_norm_wtf/surfaceRatio10, data->c_p, data->T_ref_wtf, R_seg[1]);
-            update_thermal_values(alpha_n[2], kappa_n[2], c_n[2], rho_seg_n[2], R_seg_n[2], T_curr[2], J[2], A, B, gamma, data->T_c, I[4][n-1], data->I_c2_wtf, data->rho_norm_wtf/surfaceRatio21, data->c_p, data->T_ref_wtf, R_seg[2]);
+            update_thermal_values(alpha_n[0], kappa_n[0], c_n[0], rho_seg_n[0], R_seg_n[0], T_curr[0], J[0], A, B, gamma, data->T_c, I[0][n-1], I_c[0], data->rho_norm_wtf, data->c_p, data->T_ref_wtf, R_seg[0]);
+            update_thermal_values(alpha_n[1], kappa_n[1], c_n[1], rho_seg_n[1], R_seg_n[1], T_curr[1], J[1], A, B, gamma, data->T_c, I[2][n-1], I_c[1], data->rho_norm_wtf/surfaceRatio10, data->c_p, data->T_ref_wtf, R_seg[1]);
+            update_thermal_values(alpha_n[2], kappa_n[2], c_n[2], rho_seg_n[2], R_seg_n[2], T_curr[2], J[2], A, B, gamma, data->T_c, I[4][n-1], I_c[2], data->rho_norm_wtf/surfaceRatio21, data->c_p, data->T_ref_wtf, R_seg[2]);
             // update the current nanowire resistance
             for (unsigned j=0; j<data->numberOfR; ++j)
                 R[j][n] = sum_vector(R_seg_n[j], J[j]);
@@ -418,12 +433,14 @@ int run_waterfall_3s_res(SimRes * res, SimData * data, double * dX, double dt, s
         free(c_n[j]);
         free(rho_seg_n[j]);
         free(R_seg_n[j]);
+        free(I_c[j]);
     }
     free(alpha_n);
     free(kappa_n);
     free(c_n);
     free(rho_seg_n);
     free(R_seg_n);
+    free(I_c);
 
     free(T);
     free(I);

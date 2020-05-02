@@ -2,6 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "types.h"
 #include "snspd.h"
@@ -23,8 +24,12 @@
 //            capacitor.
 SimRes * run_snspd_simulation(SimData * data, int runType) {
     printf("    Runtype %d\n\n", runType);
-    size_t J0, J1, J2;
+
+    // set the random seed to something random
+    srand((unsigned) time(0));
+
     // first locally save some important parameters that we will need all the time
+    size_t J0, J1, J2;
     J0 = data->J0;
     // put J1 and J2 to zero to suppress "maybe uninitialized" warning from the gcc compiler
     J1 = 0;

@@ -208,6 +208,16 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     // put the right currents in the results
     res->I_b[0] = v_I_b0;
     res->I_b[1] = v_I_b1;
+    // set up vectors for the critical currents to simulate nanowire impurities
+    double ** I_c = calloc(data->numberOfT, sizeof(double *));
+    I_c[0] = calloc(J0, sizeof(double));
+    for (unsigned k=0; k<J0; ++k)
+        I_c[0][k] = data->I_c0_wtf + data->impurityOffset + data->impuritySpread*(((double) rand() / (double) RAND_MAX));
+    I_c[0][J0/2] = data->I_c0_wtf;
+    I_c[1] = calloc(J1, sizeof(double));
+    for (unsigned k=0; k<J1; ++k)
+        I_c[1][k] = data->I_c1_wtf + data->impurityOffset + data->impuritySpread*(((double) rand() / (double) RAND_MAX));
+    I_c[1][J1/2] = data->I_c1_wtf;
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -276,8 +286,8 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
         if (!flagDone && n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
-            update_thermal_values(alpha0_n, kappa0_n, c0_n, rho_seg0_n, R_seg0_n, T0_curr, J0, A, B, gamma, data->T_c, I0[n-1], data->I_c0_wtf, data->rho_norm_wtf, data->c_p, data->T_ref_wtf, R_seg0);
-            update_thermal_values(alpha1_n, kappa1_n, c1_n, rho_seg1_n, R_seg1_n, T1_curr, J1, A, B, gamma, data->T_c, I2[n-1], data->I_c1_wtf, data->rho_norm_wtf/surfaceRatio10, data->c_p, data->T_ref_wtf, R_seg1);
+            update_thermal_values(alpha0_n, kappa0_n, c0_n, rho_seg0_n, R_seg0_n, T0_curr, J0, A, B, gamma, data->T_c, I0[n-1], I_c[0], data->rho_norm_wtf, data->c_p, data->T_ref_wtf, R_seg0);
+            update_thermal_values(alpha1_n, kappa1_n, c1_n, rho_seg1_n, R_seg1_n, T1_curr, J1, A, B, gamma, data->T_c, I2[n-1], I_c[1], data->rho_norm_wtf/surfaceRatio10, data->c_p, data->T_ref_wtf, R_seg1);
             // update the current nanowire resistance
             R0[n] = sum_vector(R_seg0_n, J0);
             R1[n] = sum_vector(R_seg1_n, J1);
@@ -329,6 +339,10 @@ int run_waterfall_2s_res(SimRes * res, SimData * data, double dX0, double dX1, d
     free(c1_n);
     free(rho_seg1_n);
     free(R_seg1_n);
+
+    for (unsigned j=0; j<data->numberOfT; ++j)
+        free(I_c[j]);
+    free(I_c);
 
     // transmission line loop
     if (data->simTL)

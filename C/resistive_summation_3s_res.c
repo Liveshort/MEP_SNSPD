@@ -354,15 +354,20 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
         res->I_b[3*k+1] = v_I_b1;
         res->I_b[3*k+2] = v_I_b2;
     }
-    // set up critical currents
-    double * I_c = calloc(data->numberOfT, sizeof(double));
-    I_c[0] = data->I_c0_wtf;
-    I_c[1] = data->I_c1_wtf;
-    I_c[2] = data->I_c2_wtf;
-    for (unsigned k=1; k<4; ++k) {
-        I_c[3*k] = I_c[0];
-        I_c[3*k+1] = I_c[1];
-        I_c[3*k+2] = I_c[2];
+    // set up vectors for the critical currents to simulate nanowire impurities
+    double ** I_c = calloc(data->numberOfT, sizeof(double *));
+    for (unsigned j=0; j<data->numberOfT; ++j) {
+        I_c[j] = calloc(J[j], sizeof(double));
+
+        double curr_I_c;
+        if (j % 3 == 0) curr_I_c = data->I_c0_wtf;
+        else if (j % 3 == 1) curr_I_c = data->I_c1_wtf;
+        else if (j % 3 == 2) curr_I_c = data->I_c2_wtf;
+
+        for (unsigned k=0; k<J[j]; ++k)
+            I_c[j][k] = curr_I_c + data->impurityOffset + data->impuritySpread*(((double) rand() / (double) RAND_MAX));
+
+        I_c[j][J[j]/2] = curr_I_c;
     }
 
     // determine initial conditions
@@ -437,6 +442,21 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
 
     // main time loop
     for (unsigned n=data->timeskip+1; n<NE; ++n) {
+        // trigger a second pixel somewhere down the line
+        if (n == (unsigned) (0.5E-9/dt)) {
+            halfway = J[4]/2;
+            initHS_segs = (unsigned) (data->initHS_l_wtf/dX[4]) + 1;
+            // check if there is a nonzero number of segments
+            if (initHS_segs < 2) {
+                puts("Number of segments in second hot-spot smaller than 2.\nReturning empty result with error code 2 (wrong initial hot-spot size)...");
+                res->exitValue = 2;
+                exit(2);
+            }
+            for (unsigned j=halfway - initHS_segs/2; j<halfway + initHS_segs/2; ++j) {
+                T_prev[4][j] = data->initHS_T_wtf;
+            }
+        }
+
         // print progress
         print_progress(n, NE);
 
@@ -502,12 +522,14 @@ int run_resistive_summation_3s_res(SimRes * res, SimData * data, double * dX, do
         free(c_n[j]);
         free(rho_seg_n[j]);
         free(R_seg_n[j]);
+        free(I_c[j]);
     }
     free(alpha_n);
     free(kappa_n);
     free(c_n);
     free(rho_seg_n);
     free(R_seg_n);
+    free(I_c);
 
     free(T);
     free(I);

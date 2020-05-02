@@ -106,6 +106,11 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
     }
     // put right value in the results
     res->I_b[0] = v_I0 + v_I1;
+    // set up vectors for the critical currents to simulate nanowire impurities
+    double * I_c = calloc(J, sizeof(double));
+    for (unsigned k=0; k<J; ++k)
+        I_c[k] = data->I_c0 + data->impurityOffset + data->impuritySpread*(((double) rand() / (double) RAND_MAX));
+    I_c[J/2] = data->I_c0;
 
     // prepare model parameters for estimating alpha, kappa and c
     // these parameters are considered partially state and temperature dependent
@@ -157,7 +162,7 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
         if (!flagDone && n < N) {
             // first update the thermal values used in the differential equation,
             //     the targets are included as the first five parameters
-            update_thermal_values(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T_curr, J, A, B, gamma, data->T_c, I0[n-1], data->I_c0, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
+            update_thermal_values(alpha_n, kappa_n, c_n, rho_seg_n, R_seg_n, T_curr, J, A, B, gamma, data->T_c, I0[n-1], I_c, data->rho_norm_std, data->c_p, data->T_ref_std, R_seg);
             // update the current nanowire resistance
             R[n] = sum_vector(R_seg_n, J);
         } else {
@@ -190,6 +195,8 @@ int run_yang_parallel(SimRes * res, SimData * data, double dX, double dt, size_t
     free(c_n);
     free(rho_seg_n);
     free(R_seg_n);
+
+    free(I_c);
 
     // transmission line loop
     if (data->simTL)

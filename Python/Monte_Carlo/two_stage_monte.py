@@ -93,6 +93,18 @@ def determine_unit(trgVar):
     elif trgVar == "initHS_T":
         mult = 1
         unit = "K"
+    elif "imprty" in trgVar:
+        mult = 1E6
+        unit = "µA"
+    elif "rho" in trgVar:
+        mult = 1E6
+        unit = "µΩ m"
+    elif trgVar == "alpha":
+        mult = 1E-3
+        unit = "*"
+    elif trgVar[0] == 'c':
+        mult = 1E-3
+        unit = "*"
     else:
         mult = 1
         unit = ""
@@ -101,18 +113,22 @@ def determine_unit(trgVar):
 
 if __name__ == "__main__":
     # indicate lines that should be empty and lines that should be integers
-    twoStageEmptyLines = [4, 14, 18, 22, 29, 49]
-    twoStageIntLines = [1, 2, 3, 5, 6, 7, 9, 10, 11]
+    twoStageEmptyLines = [4, 16, 20, 24, 31, 51]
+    twoStageIntLines = [1, 2, 3, 5, 6, 7, 9, 10, 13]
 
     n = 7
 
-    for trgVar in ["C_m", "initHS_l", "initHS_T", "L_m", "L_p1", "L_w0", "L_w1", "R_01", "R_p1"]:
+    #for trgVar in ["C_m", "initHS_l", "initHS_T", "L_m", "L_p1", "L_w0", "L_w1", "R_01", "R_p1", "imprtyOfs", "imprtySpd", "alpha", "cp", "ce"]:
+    for trgVar in ["R_01"]:
         # read input from csv
         input = pd.read_csv("setup/setup_{}.csv".format(trgVar), index_col=0)
         mult, unit = determine_unit(trgVar)
         print(input)
 
-        names = list(map(lambda x, y: x+str(round(y, 1)), n*[trgVar+" [{}] = ".format(unit)], list(mult*input.loc[trgVar, :])))
+        if "imprty" in trgVar:
+            names = list(map(lambda x, y: x+str(round(y, 2)), n*[trgVar+" [{}] = ".format(unit)], list(mult*input.loc[trgVar, :])))
+        else:
+            names = list(map(lambda x, y: x+str(round(y, 1)), n*[trgVar+" [{}] = ".format(unit)], list(mult*input.loc[trgVar, :])))
 
         # make a list of values
         valuesList = fill_values(input, n)
@@ -188,6 +204,7 @@ if __name__ == "__main__":
         plt.ylabel("R (k$\Omega$)")
         plt.title("R$_1$ (stg 1 res)")
         plt.tight_layout(pad=1, w_pad=0.9, h_pad=0.8)
-        plt.savefig("res_"+trgVar+".eps", format='eps')
+        plt.savefig("images/res_"+trgVar+".eps", format='eps')
+        plt.savefig("images/res_"+trgVar+".jpg", format='jpg')
         #plt.show()
         plt.close()

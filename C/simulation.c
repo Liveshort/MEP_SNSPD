@@ -78,6 +78,8 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->impurityOffset, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->impuritySpread, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->VF, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->LTL, dump) < 1) exit(6);
@@ -132,6 +134,8 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->impurityOffset, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->impuritySpread, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->VF, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->LTL, dump) < 1) exit(6);
@@ -204,6 +208,8 @@ int collect_data(FILE * fp, SimData * data) {
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->tMax, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->timeskip, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->ETratio, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->impurityOffset, dump) < 1) exit(6);
+        if (fscanf(fp, "%lf;%2000[^\n]\n", &data->impuritySpread, dump) < 1) exit(6);
         if (fscanf(fp, "%zu;%2000[^\n]\n", &data->NTL, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->VF, dump) < 1) exit(6);
         if (fscanf(fp, "%lf;%2000[^\n]\n", &data->LTL, dump) < 1) exit(6);
